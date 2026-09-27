@@ -35,6 +35,8 @@ describe('v1 import', () => {
   it('maps frequencies to priorities', () => {
     expect(out.cards.find((c) => c.id === 'c1').priority).toBe('high');
     expect(out.cards.find((c) => c.id === 'c2').priority).toBe('occ');
+    const pr = (frequency) => importV1({ people: [], cards: [{ id: 'x', peopleIds: [], frequency }] }, '2026-09-27').cards[0].priority;
+    expect(['daily', 'every-2-3-days', 'weekly', 'fortnightly', 'monthly'].map(pr)).toEqual(['high', 'med', 'low', 'occ', 'occ']);
   });
 
   it('drops split-up groups', () => {

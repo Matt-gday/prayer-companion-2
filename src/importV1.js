@@ -9,9 +9,9 @@ import { newId, splitLines, addDate } from './model.js';
 
 const PRIORITY_FROM_FREQUENCY = {
   daily: 'high',
-  'every-2-3-days': 'high',
-  weekly: 'med',
-  fortnightly: 'low',
+  'every-2-3-days': 'med',
+  weekly: 'low',
+  fortnightly: 'occ',
   monthly: 'occ',
 };
 
