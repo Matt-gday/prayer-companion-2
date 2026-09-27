@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useStore } from './store.jsx';
+import { SKIES, DEFAULT_GLASS, currentSky } from './skies.js';
 import Home from './screens/Home.jsx';
 import Pray from './screens/Pray.jsx';
 import People from './screens/People.jsx';
@@ -10,31 +11,52 @@ import Welcome from './screens/Welcome.jsx';
 import EditCard from './screens/EditCard.jsx';
 import AddNew from './screens/AddNew.jsx';
 
-function useTheme(settings) {
-  const [systemDark, setSystemDark] = useState(() => window.matchMedia?.('(prefers-color-scheme: dark)').matches);
+// Re-check the clock every minute and when the app comes back to the front,
+// so "time of day" skies move on by themselves.
+function useNow() {
+  const [now, setNow] = useState(() => new Date());
   useEffect(() => {
-    const mq = window.matchMedia?.('(prefers-color-scheme: dark)');
-    if (!mq) return undefined;
-    const onChange = (e) => setSystemDark(e.matches);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
+    const tick = () => setNow(new Date());
+    const id = setInterval(tick, 60000);
+    const onVisible = () => { if (document.visibilityState === 'visible') tick(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => { clearInterval(id); document.removeEventListener('visibilitychange', onVisible); };
   }, []);
-  const mode = settings.mode === 'system' ? (systemDark ? 'dark' : 'light') : settings.mode;
+  return now;
+}
+
+function useSky(settings, now) {
+  const key = currentSky(settings, now);
+  const sky = SKIES[key];
   useEffect(() => {
     const root = document.documentElement;
-    root.dataset.style = settings.style;
-    root.dataset.mode = mode;
     root.dataset.font = settings.font;
     root.dataset.size = settings.size;
-    const page = getComputedStyle(root).getPropertyValue('--page').trim();
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', page);
-  }, [settings.style, mode, settings.font, settings.size]);
+    root.style.setProperty('--acc', sky.go);
+    root.style.setProperty('--ring', sky.ring);
+    root.style.setProperty('--glass', sky.glass || DEFAULT_GLASS);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', sky.top);
+    document.body.style.background = sky.top;
+  }, [key, sky, settings.font, settings.size]);
+  return key;
+}
+
+export function SkyBackground({ skyKey, quiet }) {
+  const sky = SKIES[skyKey];
+  return (
+    <div className={`sky-bg ${quiet ? 'quiet' : ''}`} aria-hidden="true">
+      <div style={{ background: sky.bg }} />
+      {sky.stars && <div className="sky-stars" />}
+      {sky.sun && <><div className="sky-rays" /><div className="sky-sun" /></>}
+    </div>
+  );
 }
 
 export default function App() {
   const store = useStore();
   const { settings, toast, dismissToast } = store;
-  useTheme(settings);
+  const now = useNow();
+  const skyKey = useSky(settings, now);
 
   const [screen, setScreen] = useState({ name: 'home' });
   const [editing, setEditing] = useState(null); // card id being edited in the sheet
@@ -42,22 +64,25 @@ export default function App() {
 
   const go = (name, params = {}) => { setScreen({ name, ...params }); window.scrollTo(0, 0); };
 
-  if (!settings.onboarded) return <Welcome />;
+  if (!settings.onboarded) {
+    return <><SkyBackground skyKey={skyKey} /><Welcome skyKey={skyKey} /></>;
+  }
 
-  const nav = { go, edit: setEditing, add: () => setAdding(true), current: screen.name, from: screen.from };
+  const nav = { go, edit: setEditing, add: () => setAdding(true), current: screen.name, from: screen.from, skyKey, now };
 
   let content;
   switch (screen.name) {
     case 'pray': content = <Pray nav={nav} />; break;
     case 'people': content = <People nav={nav} />; break;
     case 'card': content = <CardPage nav={nav} cardId={screen.cardId} from={screen.from} />; break;
-    case 'settings': content = <Settings nav={nav} />; break;
+    case 'settings': content = <Settings nav={nav} focus={screen.focus} />; break;
     case 'help': content = <Help nav={nav} />; break;
     default: content = <Home nav={nav} />;
   }
 
   return (
     <>
+      <SkyBackground skyKey={skyKey} quiet={screen.name !== 'home'} />
       {content}
       {editing && <EditCard cardId={editing} nav={nav} onClose={() => setEditing(null)} />}
       {adding && <AddNew nav={nav} onClose={() => setAdding(false)} />}

@@ -20,8 +20,8 @@ const KEYS = {
 
 const DEFAULT_SETTINGS = {
   name: '',
-  style: 'colourful', // 'colourful' | 'warm'
-  mode: 'system', // 'system' | 'light' | 'dark'
+  sky: 'time', // 'time' | 'random' | a sky key (see skies.js)
+  randomPool: ['twilight', 'ocean', 'rose', 'forest', 'golden', 'aurora'],
   font: 'serif', // 'serif' | 'sans'
   size: 'l', // 's' | 'm' | 'l' | 'xl'
   limit: 15,

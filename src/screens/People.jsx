@@ -48,11 +48,11 @@ export default function People({ nav }) {
   return (
     <div className="screen">
       <TopBar onBack={() => nav.go('home')} backLabel="Home"
-        right={<button className="btn accent small" onClick={nav.add}><Plus />Add</button>} />
+        right={<button className="btn white small" onClick={nav.add}><Plus />Add</button>} />
       <div className="spread" style={{ padding: '0 4px', alignItems: 'baseline' }}>
         <h1 className="title">{archived ? 'Archived' : 'People'}</h1>
         {(archivedCount > 0 || archived) && (
-          <button className="sub small" style={{ minHeight: 36 }} onClick={() => setArchived(!archived)}>
+          <button className="small" style={{ minHeight: 36, opacity: 0.85 }} onClick={() => setArchived(!archived)}>
             {archived ? 'Back to everyone' : `Archived (${archivedCount})`}
           </button>
         )}
@@ -74,20 +74,21 @@ export default function People({ nav }) {
       </div>
 
       {rows.length === 0 ? (
-        <div className="empty">
+        <div className="surface empty">
           {cards.length === 0 ? 'Nobody here yet. Tap Add to put in the first person you want to pray for.' : 'Nobody matches that.'}
         </div>
       ) : (
-        <div className="list">
+        <div className="list cream">
           {rows.map((r) => (
             <button key={r.key} className="list-row" onClick={() => nav.go('card', { cardId: r.card.id, from: 'people' })}>
               <Avatar kind={r.kind === 'person' && r.card.isGroup && type !== 'people' ? 'group' : r.kind} name={r.name} priority={r.card.priority} />
               <span className="grow stack" style={{ gap: 3 }}>
                 <span className={r.kind === 'org' ? 'italic' : ''} style={{ fontSize: 15, fontWeight: 500 }}>{r.name}</span>
-                {r.group && <span className="row tiny" style={{ gap: 4, color: 'var(--acc)', fontWeight: 500 }}><Users size={13} />{r.group}</span>}
+                {r.group && <span className="row tiny" style={{ gap: 4, color: 'var(--acc)', fontWeight: 600 }}><Users size={13} />{r.group}</span>}
                 {r.sub && <span className="tiny sub" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.sub}</span>}
               </span>
-              <span className={`pill sm pill-${r.card.priority}`}>{isEveryDay(r.card) ? 'Every day' : PRIORITY_LABEL[r.card.priority]}</span>
+              {isEveryDay(r.card) && <span className="tiny sub">Every day</span>}
+              <span className={`dot dot-${r.card.priority}`} style={{ width: 9, height: 9 }} aria-label={`${PRIORITY_LABEL[r.card.priority]} priority`} />
             </button>
           ))}
         </div>

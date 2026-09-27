@@ -28,7 +28,7 @@ export function PriorityPicker({ value, onChange }) {
     <div className="seg on-card" role="group" aria-label="Priority">
       {PRIORITIES.map((p) => (
         <button key={p} aria-pressed={value === p} onClick={() => onChange(p)}
-          style={value === p ? { background: `var(--${p})`, color: `var(--${p}-ink)`, boxShadow: 'none' } : undefined}>
+          style={value === p ? { background: `var(--${p})`, color: '#fff', boxShadow: 'none' } : undefined}>
           {PRIORITY_LABEL[p]}
         </button>
       ))}
@@ -37,8 +37,9 @@ export function PriorityPicker({ value, onChange }) {
 }
 
 export const PriorityPill = ({ priority, small, everyDay }) => (
-  <span className={`pill pill-${priority} ${small ? 'sm' : ''}`}>
-    {everyDay ? 'Every day' : small ? PRIORITY_LABEL[priority] : `${PRIORITY_LABEL[priority]} priority`}
+  <span className="pill" style={small ? { fontSize: 11, padding: '3px 9px 3px 7px' } : undefined}>
+    <span className={`dot dot-${priority}`} />
+    {small ? PRIORITY_LABEL[priority] : `${PRIORITY_LABEL[priority]} priority`}{everyDay ? ' · every day' : ''}
   </span>
 );
 
@@ -56,7 +57,7 @@ export function Avatar({ kind, name, priority }) {
     return <span className="avatar person">{initials || '?'}</span>;
   }
   return (
-    <span className={`avatar pill-${priority}`}>
+    <span className={`avatar solid-${priority}`}>
       {kind === 'group' ? <Users size={20} /> : <Building size={19} />}
     </span>
   );
