@@ -4,7 +4,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  newId, newPoint, today, addDate, addDays, removeDate, cardMembers, tickKeys,
+  newId, newPoint, today, addDate, removeDate, cardMembers, tickKeys,
 } from './model.js';
 import { newSession, applyLimit, isCardDone, nextCards, prayedCount } from './scheduler.js';
 import { importV1, isV1Backup } from './importV1.js';
@@ -65,27 +65,6 @@ export function StoreProvider({ children }) {
   const [data, setData] = useState(() => load(dataKey, demo ? makeDemoData(today()) : EMPTY));
   const [session, setSession] = useState(() => load(sessionKey, null));
 
-  // One-off repair for sessions saved before prayer days started at 3am:
-  // an undated session from "today" was really prayed after midnight, so it
-  // belongs to the day before.
-  useEffect(() => {
-    if (!session || session.startedAt || session.date !== today()) return;
-    const from = session.date;
-    const to = addDays(from, -1);
-    const moved = new Set();
-    for (const [cardId, t] of Object.entries(session.ticks || {})) {
-      if (!Object.values(t).some(Boolean)) continue;
-      moved.add(cardId);
-      const card = data.cards.find((c) => c.id === cardId);
-      if (card) card.personIds.forEach((id) => moved.add(id));
-    }
-    const shift = (dates) => (dates && dates.includes(from) ? addDate(removeDate(dates, from), to) : dates);
-    setData((d) => ({
-      people: d.people.map((p) => (moved.has(p.id) ? { ...p, prayed: shift(p.prayed) } : p)),
-      cards: d.cards.map((c) => (moved.has(c.id) ? { ...c, prayed: shift(c.prayed) } : c)),
-    }));
-    setSession(null);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
 
