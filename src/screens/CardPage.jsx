@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../store.jsx';
 import {
   cardMembers, cardName, cardKind, personName, isOrg, lastPrayed, agoText, daysBetween,
@@ -114,62 +114,65 @@ export default function CardPage({ nav, cardId, from }) {
   );
 }
 
-// One small calendar per month, newest first, back to when the card began.
-// Prayed days are filled in; tap a day to see what you were praying for.
+// One small calendar per month, side by side, oldest on the left and
+// scrolled to the newest. Prayed days are filled in; tap a day to see what
+// you were praying for.
 function MonthCalendar({ start, end, prayedSet, picked, onPick, detail }) {
-  const [showAll, setShowAll] = useState(false);
+  const scroller = useRef(null);
   const months = [];
-  let [y, m] = end.split('-').map(Number);
-  const [sy, sm] = start.split('-').map(Number);
-  while (y > sy || (y === sy && m >= sm)) {
+  let [y, m] = start.split('-').map(Number);
+  const [ey, em] = end.split('-').map(Number);
+  while (y < ey || (y === ey && m <= em)) {
     months.push([y, m]);
-    m -= 1;
-    if (m === 0) { m = 12; y -= 1; }
+    m += 1;
+    if (m === 13) { m = 1; y += 1; }
   }
-  const shown = showAll ? months : months.slice(0, 6);
+  useEffect(() => {
+    const el = scroller.current;
+    if (el) el.scrollLeft = el.scrollWidth;
+  }, [months.length]);
   const pad = (n) => String(n).padStart(2, '0');
 
   return (
-    <div className="stack" style={{ gap: 16 }}>
-      <span className="tiny muted">Tap a day to see what you were praying for</span>
-      {shown.map(([yy, mm]) => {
-        const first = new Date(yy, mm - 1, 1);
-        const count = new Date(yy, mm, 0).getDate();
-        const offset = (first.getDay() + 6) % 7; // Monday first
-        const days = Array.from({ length: count }, (_, i) => `${yy}-${pad(mm)}-${pad(i + 1)}`);
-        const prayedCount = days.filter((d) => prayedSet.has(d)).length;
-        const pickedHere = picked && picked.startsWith(`${yy}-${pad(mm)}`);
-        return (
-          <div key={`${yy}-${mm}`} className="stack" style={{ gap: 8 }}>
-            <div className="spread small">
-              <span style={{ fontWeight: 600 }}>{first.toLocaleDateString('en-AU', { month: 'long', year: 'numeric' })}</span>
-              <span className="sub tiny">{prayedCount ? `Prayed ${prayedCount} day${prayedCount === 1 ? '' : 's'}` : 'Not prayed'}</span>
+    <div className="stack" style={{ gap: 10 }}>
+      <span className="tiny muted">
+        Tap a day to see what you were praying for{months.length > 1 ? ' · swipe sideways for earlier months' : ''}
+      </span>
+      <div ref={scroller} className="month-scroller">
+        {months.map(([yy, mm]) => {
+          const first = new Date(yy, mm - 1, 1);
+          const count = new Date(yy, mm, 0).getDate();
+          const offset = (first.getDay() + 6) % 7; // Monday first
+          const days = Array.from({ length: count }, (_, i) => `${yy}-${pad(mm)}-${pad(i + 1)}`);
+          const prayedCount = days.filter((d) => prayedSet.has(d)).length;
+          const label = first.toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
+          return (
+            <div key={`${yy}-${mm}`} className="stack" style={{ gap: 8, flexShrink: 0, scrollSnapAlign: 'end' }}>
+              <div className="stack" style={{ gap: 1 }}>
+                <span className="small" style={{ fontWeight: 600 }}>{label}</span>
+                <span className="sub tiny">{prayedCount ? `Prayed ${prayedCount} day${prayedCount === 1 ? '' : 's'}` : 'Not prayed'}</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 22px)', gridAutoRows: '22px', gap: 5 }} role="group" aria-label={label}>
+                {Array.from({ length: offset }, (_, i) => <span key={`b${i}`} />)}
+                {days.map((d) => {
+                  const on = prayedSet.has(d);
+                  const future = d > end;
+                  return (
+                    <button key={d} disabled={future} onClick={() => onPick(picked === d ? null : d)}
+                      aria-label={`${formatShortDate(d)}${on ? ', prayed' : ''}`} aria-pressed={picked === d}
+                      style={{
+                        width: 22, height: 22, borderRadius: 6, opacity: future ? 0.35 : 1,
+                        background: on ? 'var(--acc)' : 'var(--soft)',
+                        outline: picked === d ? '2px solid var(--text)' : 'none', outlineOffset: 2,
+                      }} />
+                  );
+                })}
+              </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 24px)', gap: 6 }} role="group" aria-label={first.toLocaleDateString('en-AU', { month: 'long', year: 'numeric' })}>
-              {Array.from({ length: offset }, (_, i) => <span key={`b${i}`} />)}
-              {days.map((d) => {
-                const on = prayedSet.has(d);
-                const future = d > end;
-                return (
-                  <button key={d} disabled={future} onClick={() => onPick(picked === d ? null : d)}
-                    aria-label={`${formatShortDate(d)}${on ? ', prayed' : ''}`} aria-pressed={picked === d}
-                    style={{
-                      width: 24, height: 24, borderRadius: 6, opacity: future ? 0.35 : 1,
-                      background: on ? 'var(--acc)' : 'var(--soft)',
-                      outline: picked === d ? '2px solid var(--text)' : 'none', outlineOffset: 2,
-                    }} />
-                );
-              })}
-            </div>
-            {pickedHere && detail}
-          </div>
-        );
-      })}
-      {months.length > 6 && (
-        <button className="link" style={{ alignSelf: 'flex-start', fontSize: 14 }} onClick={() => setShowAll(!showAll)}>
-          {showAll ? 'Show fewer months' : `Show ${months.length - 6} earlier month${months.length - 6 === 1 ? '' : 's'}`}
-        </button>
-      )}
+          );
+        })}
+      </div>
+      {detail}
     </div>
   );
 }
