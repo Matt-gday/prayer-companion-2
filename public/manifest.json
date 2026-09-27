@@ -1,0 +1,15 @@
+{
+  "name": "Prayer Companion 2",
+  "short_name": "Prayer 2",
+  "description": "A simple way to keep praying for the people in your life, a few each day",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#EEF1F8",
+  "theme_color": "#EEF1F8",
+  "icons": [
+    { "src": "./icon.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "./icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
