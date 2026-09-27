@@ -21,7 +21,11 @@ export const toISODate = (d) => {
   return `${y}-${m}-${day}`;
 };
 
-export const today = () => toISODate(new Date());
+// A prayer day runs from 3am to 3am, so praying after midnight still
+// counts as the day before.
+export const DAY_START_HOUR = 3;
+export const prayerDate = (d = new Date()) => toISODate(new Date(d.getTime() - DAY_START_HOUR * 3600000));
+export const today = () => prayerDate();
 
 const parse = (iso) => {
   const [y, m, d] = iso.split('-').map(Number);

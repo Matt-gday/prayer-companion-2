@@ -33,3 +33,14 @@ describe('home colour', () => {
     expect(skyMode('time')).toBe('time');
   });
 });
+
+import { prayerDate } from './model.js';
+
+describe('prayer day', () => {
+  it('runs from 3am to 3am', () => {
+    expect(prayerDate(new Date(2026, 8, 28, 0, 30))).toBe('2026-09-27');
+    expect(prayerDate(new Date(2026, 8, 28, 2, 59))).toBe('2026-09-27');
+    expect(prayerDate(new Date(2026, 8, 28, 3, 0))).toBe('2026-09-28');
+    expect(prayerDate(new Date(2026, 8, 28, 23, 59))).toBe('2026-09-28');
+  });
+});

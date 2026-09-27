@@ -84,6 +84,7 @@ export const newSession = (cards, people, date, limit) => ({
   ticks: {},
   keepGoing: false,
   index: 0,
+  startedAt: Date.now(),
 });
 
 // Change the day's limit part way through.
