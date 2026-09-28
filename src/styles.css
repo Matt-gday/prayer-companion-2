@@ -61,6 +61,8 @@ a { color: inherit; text-decoration: none; }
 input, textarea { outline: none; }
 input::placeholder, textarea::placeholder { color: var(--muted); }
 :focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+/* Text boxes already show a coloured border when active; no extra outline. */
+input:focus-visible, textarea:focus-visible, select:focus-visible, [contenteditable]:focus-visible { outline: none; }
 
 /* The sky behind everything. */
 .sky-bg { position: fixed; top: 0; left: 0; right: 0; height: var(--screen-h, 100lvh); z-index: 0; pointer-events: none; overflow: hidden;

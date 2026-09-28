@@ -202,8 +202,9 @@ function PrayerCard({ card, onEdit }) {
         {adding ? (
           <div className="row" style={{ gap: 8 }}>
             <input className="input" autoFocus value={draft} placeholder="New prayer point" aria-label="New prayer point"
-              onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') saveDraft(); if (e.key === 'Escape') setAdding(false); }} />
-            <button className="btn accent small" onClick={saveDraft}>Add</button>
+              onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') saveDraft(); if (e.key === 'Escape') setAdding(false); }}
+              onBlur={() => { if (!draft.trim()) { setDraft(''); setAdding(false); } }} />
+            <button className="btn accent small" onPointerDown={(e) => e.preventDefault()} onClick={saveDraft}>Add</button>
           </div>
         ) : (
           <button className="link" style={{ alignSelf: 'flex-start', fontSize: 14 }} onClick={() => setAdding(true)}><Plus />Add prayer point</button>
