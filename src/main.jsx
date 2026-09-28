@@ -12,6 +12,20 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>
 );
 
+// If the app opens while a new version is still reaching GitHub's servers,
+// the page can arrive before its stylesheet. Check once it has loaded, and if
+// the styles are missing, reload once to fetch them fresh.
+if (import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    const styled = getComputedStyle(document.documentElement).getPropertyValue('--ui').trim();
+    const last = Number(sessionStorage.getItem('pc2_style_reload') || 0);
+    if (!styled && Date.now() - last > 60000) {
+      sessionStorage.setItem('pc2_style_reload', String(Date.now()));
+      location.reload();
+    }
+  });
+}
+
 // Offline support. Only in the built app, so local development stays fresh.
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {

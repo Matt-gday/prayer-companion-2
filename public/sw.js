@@ -37,7 +37,8 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
-      return fetch(request).then((response) => {
+      // Never keep a failed download; ask the network fresh instead.
+      return fetch(request, { cache: 'no-store' }).then((response) => {
         if (response.ok || response.type === 'opaque') {
           const copy = response.clone();
           caches.open(CACHE).then((cache) => cache.put(request, copy));
