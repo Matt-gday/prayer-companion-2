@@ -2,6 +2,8 @@ import { SKIES, DEFAULT_GLASS } from '../skies.js';
 import { Users, List, Download, Next } from './Icons.jsx';
 
 const W = 390;
+// A few fixed specks, like the sparkles on the real Home screen.
+const SPECKS = Array.from({ length: 26 }, (_, i) => [(i * 137.5) % 100, (i * 61.8 + 7) % 100, 0.8 + ((i * 7) % 10) / 10, 0.35 + ((i * 3) % 5) / 10]);
 const H = 844;
 
 // A faithful miniature of the Home screen in a given sky, drawn at full
@@ -26,16 +28,20 @@ export default function HomePreview({ skyKey, name, width = 170 }) {
               background: 'radial-gradient(circle, #FFFDF0 0%, #FFF1BE 14%, #FFD98A 24%, rgba(255,196,110,.55) 38%, rgba(255,170,110,.18) 55%, rgba(255,170,110,0) 70%)' }} />
           </>
         )}
+        {SPECKS.map(([x, y, r, a], i) => (
+          <span key={i} style={{ position: 'absolute', left: `${x}%`, top: `${y}%`, width: r * 2, height: r * 2, borderRadius: '50%', background: `rgba(255,255,255,${a})` }} />
+        ))}
         <div style={{ position: 'absolute', inset: 0, padding: '58px 18px 26px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 14 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 17, fontWeight: 500 }}>
             <span>Monday 28 September</span>
             <span style={{ width: 44, height: 44, borderRadius: 22, background: glass }} />
           </div>
-          <div>
+          <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 19, opacity: 0.92 }}>Good morning,</div>
             <div style={{ fontSize: 58, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1 }}>{name || 'Friend'}</div>
           </div>
-          <div style={{ alignSelf: 'center', width: 220, height: 220, position: 'relative', marginTop: 8 }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+          <div style={{ width: 220, height: 220, position: 'relative' }}>
             <svg width="220" height="220" viewBox="0 0 200 200">
               <circle cx="100" cy="100" r={R} fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.26)" strokeWidth="13" />
               <circle cx="100" cy="100" r={R} fill="none" stroke={sky.ring} strokeWidth="13" strokeLinecap="round"
@@ -53,7 +59,7 @@ export default function HomePreview({ skyKey, name, width = 170 }) {
               </span>
             ))}
           </div>
-          <div style={{ flex: 1 }} />
+          </div>
           <div style={{ height: 78, borderRadius: 24, background: '#fff', color: '#2A2140', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 10px 0 22px', boxShadow: '0 10px 26px rgba(40,20,60,.18)' }}>
             <span>
               <span style={{ fontSize: 19, fontWeight: 600, display: 'block' }}>Continue praying</span>
@@ -63,10 +69,10 @@ export default function HomePreview({ skyKey, name, width = 170 }) {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
             {[[Users, 'People', '46 cards'], [List, 'Lists', '2 lists'], [Download, 'Backup', '3 days ago']].map(([Icon, t, sub]) => (
-              <div key={t} style={{ borderRadius: 18, padding: '12px 6px', background: glass, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600 }}>
-                <span style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(255,255,255,.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={20} /></span>
+              <div key={t} style={{ borderRadius: 18, padding: '12px 6px', background: glass, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, fontSize: 14, fontWeight: 600 }}>
+                <Icon size={22} />
                 {t}
-                <span style={{ fontSize: 12, fontWeight: 400, opacity: 0.85, marginTop: -4 }}>{sub}</span>
+                <span style={{ fontSize: 12, fontWeight: 400, opacity: 0.85, marginTop: -2 }}>{sub}</span>
               </div>
             ))}
           </div>
