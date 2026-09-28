@@ -28,6 +28,7 @@ const DEFAULT_SETTINGS = {
   onboarded: false,
   lastBackup: null,
   demo: false,
+  sparkles: true,
 };
 
 const EMPTY = { people: [], cards: [], lists: [] };

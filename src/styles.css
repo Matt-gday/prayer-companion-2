@@ -69,6 +69,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, [contentedita
 /* The sky behind everything. */
 .sky-bg { position: fixed; top: 0; left: 0; right: 0; height: var(--screen-h, 100lvh); z-index: 0; pointer-events: none; overflow: hidden;
   -webkit-mask: linear-gradient(#000 70%, transparent 90%); mask: linear-gradient(#000 70%, transparent 90%); }
+.sparkles { position: fixed; top: 0; left: 0; width: 100vw; height: var(--screen-h, 100lvh); z-index: 0; pointer-events: none; }
 .sky-bg > div { position: absolute; inset: 0; }
 .sky-stars {
   opacity: .72;
@@ -325,7 +326,8 @@ select.input { appearance: none; }
 
 /* Home tiles (three) */
 .home-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.home-tile.col { flex-direction: column; gap: 6px; padding: 12px 6px; text-align: center; font-size: 14px; }
+.home-tile.col { flex-direction: column; gap: 4px; padding: 12px 6px; text-align: center; font-size: 14px; }
+.home-tile.col .ic { width: auto; height: auto; background: none; border-radius: 0; }
 .home-tile.col small { margin-top: 0; }
 
 /* Member bubbles */

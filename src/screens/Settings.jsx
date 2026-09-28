@@ -129,6 +129,13 @@ export default function Settings({ nav, focus }) {
         </label>
         <div className="list-row">
           <span className="grow stack" style={{ gap: 2 }}>
+            <span>Sparkles on Home</span>
+            <span className="tiny sub">Tiny specks of light drifting gently behind the Home screen.</span>
+          </span>
+          <Switch checked={settings.sparkles !== false} label="Sparkles on Home" onChange={(on) => setSetting('sparkles', on)} />
+        </div>
+        <div className="list-row">
+          <span className="grow stack" style={{ gap: 2 }}>
             <span>Demo mode</span>
             <span className="tiny sub">Try the app with sample people. Your own list is kept safe.</span>
           </span>

@@ -130,15 +130,15 @@ export default function Home({ nav }) {
 
       <div className="home-tiles">
         <button className="home-tile col" onClick={() => nav.go('people')}>
-          <span className="ic"><Users size={20} /></span>
+          <span className="ic"><Users size={22} /></span>
           <span>People<small>{prayable.length} card{prayable.length === 1 ? '' : 's'}</small></span>
         </button>
         <button className="home-tile col" onClick={() => nav.go('lists')}>
-          <span className="ic"><List size={20} /></span>
+          <span className="ic"><List size={22} /></span>
           <span>Lists<small>{(lists || []).length ? `${lists.length} list${lists.length === 1 ? '' : 's'}` : 'Growth group…'}</small></span>
         </button>
         <button className="home-tile col" onClick={() => nav.go('settings', { focus: 'backup' })}>
-          <span className="ic"><Download size={20} /></span>
+          <span className="ic"><Download size={22} /></span>
           <span>Backup<small style={backupAge == null || backupAge > 30 ? { color: '#FFE3A0', opacity: 1 } : undefined}>{backupText}</small></span>
         </button>
       </div>

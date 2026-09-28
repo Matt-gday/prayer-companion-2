@@ -12,6 +12,7 @@ import Welcome from './screens/Welcome.jsx';
 import EditCard from './screens/EditCard.jsx';
 import AddFlow from './screens/AddFlow.jsx';
 import { ListsHome, ListPage } from './screens/Lists.jsx';
+import Sparkles from './components/Sparkles.jsx';
 
 // Re-check the clock every minute and when the app comes back to the front,
 // so "time of day" skies move on by themselves.
@@ -158,6 +159,7 @@ export default function App() {
   return (
     <>
       <SkyBackground skyKey={skyKey} quiet={screen.name !== 'home'} />
+      {screen.name === 'home' && settings.sparkles !== false && <Sparkles />}
       <Scroller>{content}</Scroller>
       {editing && <EditCard cardId={editing} nav={nav} onClose={() => setEditing(null)} />}
       {toast && (
