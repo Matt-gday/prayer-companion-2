@@ -61,7 +61,12 @@ function useSky(settings, now, quiet) {
       if (sky.sun) layers.unshift(sunGlow(quiet));
       if (sky.stars) layers.unshift(...STARS);
     }
-    html.style.backgroundColor = lastColour(layers[layers.length - 1]);
+    // iPhone home-screen apps have a strip below the page that only ever shows
+    // the page's plain background colour. Ease the bottom of the sky into that
+    // exact colour so the two meet with no visible line.
+    const last = lastColour(layers[layers.length - 1]);
+    layers.unshift(`linear-gradient(180deg, ${last}00 84%, ${last} 96%)`);
+    html.style.backgroundColor = last;
     html.style.backgroundImage = layers.join(', ');
     html.style.backgroundSize = '100% var(--screen-h)';
     html.style.backgroundRepeat = 'no-repeat';
