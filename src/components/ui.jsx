@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { PRIORITIES, PRIORITY_LABEL } from '../model.js';
 import { Back, Check, Users, Building } from './Icons.jsx';
@@ -150,4 +150,28 @@ export function useConfirm() {
       onConfirm={() => { setState(null); state.onConfirm(); }} />
   );
   return [ask, node];
+}
+
+// One line of big text that shrinks to fit the width instead of wrapping.
+export function FitText({ as: Tag = 'span', size, min = 24, className, style, children }) {
+  const ref = useRef(null);
+  const [fs, setFs] = useState(size);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const fit = () => {
+      el.style.fontSize = `${size}px`;
+      const avail = el.clientWidth;
+      const need = el.scrollWidth;
+      const next = need > avail ? Math.max(min, Math.floor(size * (avail / need) * 10) / 10) : size;
+      el.style.fontSize = `${next}px`;
+      setFs(next);
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el.parentElement || el);
+    document.fonts?.ready.then(fit);
+    return () => ro.disconnect();
+  }, [size, min, children]);
+  return <Tag ref={ref} className={className} style={{ ...style, fontSize: fs, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{children}</Tag>;
 }

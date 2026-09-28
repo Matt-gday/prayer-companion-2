@@ -3,6 +3,7 @@ import { useStore } from '../store.jsx';
 import { formatLongDate, PRIORITIES, PRIORITY_LABEL, isPrayable, daysBetween, cardName } from '../model.js';
 import { buildList, everyDayCheck, isCardDone, nextCards } from '../scheduler.js';
 import { greetingFor } from '../skies.js';
+import { FitText } from '../components/ui.jsx';
 import { Next, Users, Download, Plus, Cog, List } from '../components/Icons.jsx';
 
 export default function Home({ nav }) {
@@ -60,13 +61,13 @@ export default function Home({ nav }) {
   return (
     <div className="screen home" style={{ gap: 16 }}>
       <div className="spread" style={{ marginTop: 4 }}>
-        <span className="small" style={{ opacity: 0.95 }}>{formatLongDate(date)}{settings.demo ? ' · Demo' : ''}</span>
+        <span style={{ fontSize: 17, fontWeight: 500, opacity: 0.95 }}>{formatLongDate(date)}{settings.demo ? ' · Demo' : ''}</span>
         <button className="icon-btn glass" onClick={() => nav.go('settings')} aria-label="Settings"><Cog /></button>
       </div>
 
       <div style={{ textAlign: 'center' }}>
         {settings.name && <div style={{ fontSize: 19, opacity: 0.92 }}>{greetingFor(nav.now)},</div>}
-        <h1 className="title" style={{ fontSize: settings.name ? 58 : 46, lineHeight: 1.02 }}>{settings.name || greetingFor(nav.now)}</h1>
+        <FitText as="h1" className="title" size={settings.name ? 58 : 46} min={22} style={{ lineHeight: 1.1 }}>{settings.name || greetingFor(nav.now)}</FitText>
       </div>
 
       {prayable.length === 0 ? (
