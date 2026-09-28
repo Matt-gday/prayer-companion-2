@@ -28,7 +28,6 @@ function useNow() {
 }
 
 export const ONBOARDING_BG = 'linear-gradient(180deg, #141E46 0%, #1B3A6B 30%, #1F6F8B 62%, #23918F 84%, #2FA89B 100%)';
-const lastColour = (bg) => (bg.match(/#[0-9A-Fa-f]{6}/g) || []).pop();
 
 // The sky is painted on the page's back layer (the <html> background), which
 // iPhone home-screen apps draw edge to edge. The page itself never scrolls
@@ -61,12 +60,9 @@ function useSky(settings, now, quiet) {
       if (sky.sun) layers.unshift(sunGlow(quiet));
       if (sky.stars) layers.unshift(...STARS);
     }
-    // iPhone home-screen apps have a strip below the page that only ever shows
-    // the page's plain background colour. Ease the bottom of the sky into that
-    // exact colour so the two meet with no visible line.
-    const last = lastColour(layers[layers.length - 1]);
-    layers.unshift(`linear-gradient(180deg, ${last}00 84%, ${last} 96%)`);
-    html.style.backgroundColor = last;
+    // The iPhone fills the area behind the clock with the page's plain
+    // background colour, so use the sky's top colour to blend with it.
+    html.style.backgroundColor = settings.onboarded ? sky.top : '#141E46';
     html.style.backgroundImage = layers.join(', ');
     html.style.backgroundSize = '100% var(--screen-h)';
     html.style.backgroundRepeat = 'no-repeat';
