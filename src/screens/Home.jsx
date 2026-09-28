@@ -84,7 +84,8 @@ export default function Home({ nav }) {
         </>
       ) : (
         <>
-          <div className="home-ring-wrap"><div className="home-ring">
+          <div className="home-ring-wrap"><div className="home-ring" role="button" tabIndex={0} aria-label={title} onClick={begin}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') begin(); }}>
             <svg viewBox="0 0 200 200" aria-hidden="true">
               <circle cx="100" cy="100" r={R} fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.26)" strokeWidth="13" />
               {frac > 0 && (

@@ -195,16 +195,29 @@ select.input { appearance: none; }
 .member-name { font-size: 17px; font-weight: 600; }
 .pray-foot { display: flex; gap: 8px; }
 .next-btn { width: 52px; height: 56px; border-radius: 18px; background: var(--glass); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.pray-main { flex: 1; height: 56px; border-radius: 18px; background: #fff; color: #2A2140; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; font-weight: 600; white-space: nowrap; box-shadow: 0 8px 22px rgba(40,20,60,.18); }
+/* padding-right centres the words, with the tick hanging to their left:
+   it looks centred rather than sitting to the right. */
+.pray-main { flex: 1; height: 56px; padding: 0 26px 0 0; border-radius: 18px; background: #fff; color: #2A2140; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; font-weight: 600; white-space: nowrap; box-shadow: 0 8px 22px rgba(40,20,60,.18); }
 .pray-main .check { color: var(--acc); display: flex; }
 .pray-main.done { background: var(--acc); color: #fff; }
 .pray-main.done .check { color: #fff; }
 .counter-extra { color: #7CF0B0; }
 
-@keyframes slide-left { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
-@keyframes slide-right { from { transform: translateX(-24px); opacity: 0; } to { transform: none; opacity: 1; } }
-.slide-left { animation: slide-left .22s ease-out; }
-.slide-right { animation: slide-right .22s ease-out; }
+/* Moving between cards: the old card slides off one side as the next slides
+   in from the other. */
+.pray-stage { position: relative; flex: 1 1 auto !important; min-height: 0; }
+.pray-stage > .pray-card { position: absolute; inset: 0; touch-action: pan-y; }
+@keyframes card-out-left { from { transform: translateX(var(--from, 0px)); } to { transform: translateX(calc(-100% - 40px)); } }
+@keyframes card-out-right { from { transform: translateX(var(--from, 0px)); } to { transform: translateX(calc(100% + 40px)); } }
+@keyframes card-in-right { from { transform: translateX(calc(100% + 40px)); } to { transform: none; } }
+@keyframes card-in-left { from { transform: translateX(calc(-100% - 40px)); } to { transform: none; } }
+.card-out-left, .card-out-right { pointer-events: none; animation: .42s cubic-bezier(.3, .7, .25, 1) both; }
+.card-in-left, .card-in-right { animation: .42s cubic-bezier(.3, .7, .25, 1) both; }
+.card-out-left { animation-name: card-out-left; }
+.card-out-right { animation-name: card-out-right; }
+.card-in-right { animation-name: card-in-right; }
+.card-in-left { animation-name: card-in-left; }
+@media (prefers-reduced-motion: reduce) { .card-out-left, .card-out-right { display: none; } .card-in-left, .card-in-right { animation: fade .2s; } }
 
 /* Home */
 /* The ring and pills stay together, centred in the space left over. The ring

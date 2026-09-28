@@ -20,8 +20,13 @@ function ViewToggle({ view, onChange }) {
 export default function Pray({ nav }) {
   const store = useStore();
   const { people, cards, settings, session, prayedToday, setIndex, setView, keepPraying, addExtraCard } = store;
-  const [slide, setSlide] = useState('');
   const [noneLeft, setNoneLeft] = useState(false);
+  // The card sliding away while the next slides in: { id, dir, from }.
+  const [leaving, setLeaving] = useState(null);
+  const leaveTimer = useRef(null);
+  const [drag, setDrag] = useState(null); // finger position while swiping: { x, active }
+  const goRef = useRef(null);
+  const prevDone = useRef(null);
   // The finish screen waits until you move on from the last card (no jumping
   // ahead the moment you tick), unless you open the screen already finished.
   const [finishAsked, setFinishAsked] = useState(() => !!session && !session.keepGoing && prayedToday >= Math.min(settings.limit, session.list.length));
@@ -33,6 +38,20 @@ export default function Pray({ nav }) {
     .filter((c) => c && (isPrayable(c, people) || isCardDone(c, people, session.ticks)));
 
   useEffect(() => { if (!session) nav.go('home'); }, [session]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => clearTimeout(leaveTimer.current), []);
+
+  // Once a card is marked as prayed, pause a moment, then move on by itself.
+  const current = session && list.length ? list[Math.min(session.index || 0, list.length - 1)] : null;
+  const currentDone = current ? isCardDone(current, people, session.ticks) : false;
+  const inCards = session?.view !== 'list';
+  useEffect(() => {
+    const prev = prevDone.current;
+    prevDone.current = { id: current?.id, done: currentDone };
+    if (!current || !inCards || !prev || prev.id !== current.id || prev.done || !currentDone) return undefined;
+    const t = setTimeout(() => goRef.current?.(1), 1000);
+    return () => clearTimeout(t);
+  }, [current?.id, currentDone, inCards]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!session) return null;
 
   const limit = settings.limit;
@@ -62,9 +81,12 @@ export default function Pray({ nav }) {
   const card = list[index];
   const done = (c) => isCardDone(c, people, session.ticks);
 
-  const go = (dir) => {
+  const go = (dir, from = 0) => {
+    setDrag(null);
     if (finishReady && dir > 0) { setFinishAsked(true); return; }
-    setSlide(dir > 0 ? 'slide-left' : 'slide-right');
+    setLeaving({ id: card.id, dir, from });
+    clearTimeout(leaveTimer.current);
+    leaveTimer.current = setTimeout(() => setLeaving(null), 450);
     if (dir > 0 && index === list.length - 1) {
       if (session.keepGoing) {
         if (!addExtraCard()) setNoneLeft(true);
@@ -76,6 +98,27 @@ export default function Pray({ nav }) {
     }
     setIndex((index + dir + list.length) % list.length);
   };
+  goRef.current = go;
+
+  // Swiping: the card follows your finger, then slides away (or springs back).
+  const onTouchStart = (e) => { touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, horizontal: null }; };
+  const onTouchMove = (e) => {
+    const t = touch.current;
+    if (!t) return;
+    const dx = e.touches[0].clientX - t.x;
+    const dy = e.touches[0].clientY - t.y;
+    if (t.horizontal == null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) t.horizontal = Math.abs(dx) > Math.abs(dy);
+    if (t.horizontal) setDrag({ x: dx, active: true });
+  };
+  const onTouchEnd = (e) => {
+    const t = touch.current;
+    touch.current = null;
+    if (!t || !t.horizontal) return;
+    const dx = e.changedTouches[0].clientX - t.x;
+    if (Math.abs(dx) > 60) go(dx < 0 ? 1 : -1, dx);
+    else setDrag({ x: 0, active: false });
+  };
+  const outgoing = leaving && leaving.id !== card.id ? list.find((c) => c.id === leaving.id) : null;
 
   const counter = extra > 0 || (session.keepGoing && prayedToday >= limit)
     ? <span style={{ fontWeight: 600 }}>{limit} <span className="counter-extra">+{extra}</span></span>
@@ -113,16 +156,18 @@ export default function Pray({ nav }) {
   return (
     <div className="screen fixed" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
       {topbar}
-      <div key={card.id} className={`pray-card ${slide}`}
-        onTouchStart={(e) => { touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
-        onTouchEnd={(e) => {
-          if (!touch.current) return;
-          const dx = e.changedTouches[0].clientX - touch.current.x;
-          const dy = e.changedTouches[0].clientY - touch.current.y;
-          touch.current = null;
-          if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? 1 : -1);
-        }}>
-        <PrayerCard card={card} onEdit={() => nav.edit(card.id)} />
+      <div className="pray-stage">
+        {outgoing && (
+          <div key={`out-${outgoing.id}`} className={`pray-card card-out-${leaving.dir > 0 ? 'left' : 'right'}`}
+            style={{ '--from': `${leaving.from}px` }} aria-hidden="true">
+            <PrayerCard card={outgoing} onEdit={() => {}} />
+          </div>
+        )}
+        <div key={card.id} className={`pray-card ${outgoing ? `card-in-${leaving.dir > 0 ? 'right' : 'left'}` : ''}`}
+          style={drag ? { transform: `translateX(${drag.x}px)`, transition: drag.active ? 'none' : 'transform .25s ease-out' } : undefined}
+          onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} onTouchCancel={() => { touch.current = null; setDrag(null); }}>
+          <PrayerCard card={card} onEdit={() => nav.edit(card.id)} />
+        </div>
       </div>
       <PrayerFoot card={card} onNext={() => go(1)} onPrev={() => go(-1)} />
     </div>
