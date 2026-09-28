@@ -64,16 +64,41 @@ export function Avatar({ kind, name, priority }) {
   );
 }
 
+// How much of the screen the on-screen keyboard is covering.
+function useKeyboardHeight() {
+  const [kb, setKb] = useState(0);
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return undefined;
+    const update = () => setKb(Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)));
+    update();
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => { vv.removeEventListener('resize', update); vv.removeEventListener('scroll', update); };
+  }, []);
+  return kb;
+}
+
 export function Sheet({ onClose, children, label }) {
+  const kb = useKeyboardHeight();
+  const sheetRef = useRef(null);
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
   }, []);
-  // Drawn above the scrolling screens so the bottom fade never touches it.
+  // When the keyboard opens, keep the box being typed in visible.
+  useEffect(() => {
+    if (!kb) return;
+    const el = document.activeElement;
+    if (el && sheetRef.current?.contains(el)) setTimeout(() => el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 50);
+  }, [kb]);
+  // Drawn above the scrolling screens so the bottom fade never touches it,
+  // and lifted above the on-screen keyboard.
   return createPortal(
-    <div className="overlay" onClick={onClose}>
-      <div className="sheet" role="dialog" aria-modal="true" aria-label={label} onClick={(e) => e.stopPropagation()}>
+    <div className="overlay" onClick={onClose} style={kb ? { paddingBottom: kb } : undefined}>
+      <div ref={sheetRef} className="sheet" role="dialog" aria-modal="true" aria-label={label} onClick={(e) => e.stopPropagation()}
+        style={kb ? { maxHeight: `calc((100dvh - ${kb}px - 24px) / var(--z, 1))`, borderRadius: 28, paddingBottom: 16 } : undefined}>
         <div className="handle" />
         {children}
       </div>
