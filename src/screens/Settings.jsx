@@ -2,117 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../store.jsx';
 import { PRIORITIES, PRIORITY_LABEL, isPrayable, daysBetween } from '../model.js';
 import { estimateIntervals, describeInterval, everyDayCheck } from '../scheduler.js';
-import { SKIES, DAY_SKIES, COLOUR_SKIES, skyMode, skyForDay, nextSkyText, skyForTime } from '../skies.js';
-import { TopBar, Segmented, Switch, useConfirm } from '../components/ui.jsx';
-import SkyThumb from '../components/SkyThumb.jsx';
-import { Download, Upload, Chevron, Lock } from '../components/Icons.jsx';
-
-export const LOOK_OPTIONS = {
-  font: [
-    { value: 'sans', label: 'Sans-serif', style: { fontFamily: "'Inter', system-ui, sans-serif" } },
-    { value: 'serif', label: 'Serif', style: { fontFamily: "'Newsreader', Georgia, serif", fontSize: 16 } },
-  ],
-  size: [
-    { value: 's', label: 'A', style: { fontSize: 12 } },
-    { value: 'm', label: 'A', style: { fontSize: 15 } },
-    { value: 'l', label: 'A', style: { fontSize: 18 } },
-    { value: 'xl', label: 'A', style: { fontSize: 22 } },
-  ],
-};
-
-// The three ways to choose the home colour, as big picture buttons.
-export function ModeCards({ mode, onChange }) {
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }} role="group" aria-label="How to choose the colour">
-      <button className="mode-card" aria-pressed={mode === 'time'} onClick={() => onChange('time')}>
-        <span style={{ display: 'flex', height: 26, width: '100%', borderRadius: 8, overflow: 'hidden' }}>
-          {DAY_SKIES.map((k) => <span key={k} style={{ flex: 1, background: SKIES[k].bg }} />)}
-        </span>
-        Time of day
-      </button>
-      <button className="mode-card" aria-pressed={mode === 'random'} onClick={() => onChange('random')}>
-        <span style={{ position: 'relative', height: 26, width: 62 }}>
-          {['ocean', 'rose', 'aurora'].map((k, i) => (
-            <span key={k} style={{ position: 'absolute', left: i * 16, top: [2, 0, 3][i], width: 24, height: 22, borderRadius: 6, background: SKIES[k].bg, transform: `rotate(${[-10, 6, -4][i]}deg)`, boxShadow: '0 1px 3px rgba(0,0,0,.2)' }} />
-          ))}
-        </span>
-        Random daily
-      </button>
-      <button className="mode-card" aria-pressed={mode === 'choose'} onClick={() => onChange('choose')}>
-        <span style={{ height: 26, display: 'flex', alignItems: 'center' }}><Lock size={20} /></span>
-        Choose one
-      </button>
-    </div>
-  );
-}
-
-function SkyPicker({ nav }) {
-  const { settings, setSetting } = useStore();
-  const mode = skyMode(settings.sky);
-  const pool = settings.randomPool && settings.randomPool.length ? settings.randomPool : COLOUR_SKIES;
-  const todayRandom = skyForDay(pool, nav.now);
-  const timeKey = skyForTime(nav.now);
-
-  const changeMode = (m) => {
-    if (m === 'time') setSetting('sky', 'time');
-    else if (m === 'random') setSetting('sky', 'random');
-    else if (mode !== 'choose') setSetting('sky', nav.skyKey);
-  };
-  const togglePool = (k) => {
-    const next = pool.includes(k) ? pool.filter((x) => x !== k) : [...pool, k];
-    if (next.length) setSetting('randomPool', next);
-  };
-
-  const grid = (children) => (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '14px 10px' }}>{children}</div>
-  );
-
-  return (
-    <div className="surface stack" style={{ gap: 12 }}>
-      <span style={{ fontSize: 16, fontWeight: 600 }}>Home colour</span>
-      <ModeCards mode={mode} onChange={changeMode} />
-
-      {mode === 'time' && (
-        <>
-          <span className="small sub" style={{ lineHeight: 1.45 }}>
-            The sky changes by itself through the day. Now it’s {SKIES[timeKey].name}; {nextSkyText(timeKey)}.
-          </span>
-          {grid(DAY_SKIES.map((k) => <SkyThumb key={k} skyKey={k} sub={SKIES[k].times} now={k === timeKey} selected={k === timeKey} />))}
-        </>
-      )}
-
-      {mode === 'random' && (
-        <>
-          <span className="small sub" style={{ lineHeight: 1.45 }}>
-            Each morning one of your ticked colours is picked for the whole day. Today it’s <b style={{ color: '#fff' }}>{SKIES[todayRandom].name}</b>. Tap a colour to leave it out.
-          </span>
-          {grid(COLOUR_SKIES.map((k) => {
-            const on = pool.includes(k);
-            return (
-              <SkyThumb key={k} skyKey={k} selected={k === todayRandom} skipped={!on} badge={on ? 'check' : 'off'}
-                sub={k === todayRandom ? 'today' : on ? '' : 'skipped'} onClick={() => togglePool(k)}
-                label={`${SKIES[k].name}, ${on ? 'included' : 'skipped'}`} />
-            );
-          }))}
-        </>
-      )}
-
-      {mode === 'choose' && (
-        <>
-          <span className="small sub">Tap a colour to use it every day.</span>
-          <span className="small" style={{ fontWeight: 600 }}>Colours</span>
-          {grid(COLOUR_SKIES.map((k) => (
-            <SkyThumb key={k} skyKey={k} selected={settings.sky === k} badge={settings.sky === k ? 'check' : null} onClick={() => setSetting('sky', k)} />
-          )))}
-          <span className="small" style={{ fontWeight: 600, marginTop: 4 }}>Skies</span>
-          {grid(DAY_SKIES.map((k) => (
-            <SkyThumb key={k} skyKey={k} selected={settings.sky === k} badge={settings.sky === k ? 'check' : null} onClick={() => setSetting('sky', k)} />
-          )))}
-        </>
-      )}
-    </div>
-  );
-}
+import { Switch, useConfirm } from '../components/ui.jsx';
+import { SkyChooser, FontCards, SizeSlider, TextPreview } from '../components/Choosers.jsx';
+import { Download, Upload, Chevron, Back } from '../components/Icons.jsx';
 
 export default function Settings({ nav, focus }) {
   const { people, cards, settings, date, setSetting, setLimit, setDemo, exportBackup, readBackup, restoreBackup } = useStore();
@@ -165,24 +57,24 @@ export default function Settings({ nav, focus }) {
 
   return (
     <div className="screen">
-      <TopBar onBack={() => nav.go('home')} backLabel="Home" />
+      <div className="topbar pinned">
+        <button className="back" onClick={() => nav.go('home')}><Back />Home</button>
+        <span className="small" style={{ opacity: 0.85, paddingRight: 6 }}>Settings</span>
+      </div>
       <h1 className="title" style={{ padding: '0 4px' }}>Settings</h1>
 
-      <SkyPicker nav={nav} />
+      <div className="surface stack" style={{ gap: 12 }}>
+        <span style={{ fontSize: 16, fontWeight: 600 }}>Home colour</span>
+        <SkyChooser sky={settings.sky} randomPool={settings.randomPool} now={nav.now} currentKey={nav.skyKey}
+          onChange={(patch) => Object.entries(patch).forEach(([k, v]) => setSetting(k, v))} />
+      </div>
 
       <div className="surface stack" style={{ gap: 12 }}>
-        <div className="stack" style={{ gap: 6 }}>
-          <span className="label">Reading font</span>
-          <Segmented options={LOOK_OPTIONS.font} value={settings.font} onChange={(v) => setSetting('font', v)} label="Reading font" />
-        </div>
-        <div className="stack" style={{ gap: 6 }}>
-          <span className="label">Text size on prayer cards</span>
-          <Segmented options={LOOK_OPTIONS.size} value={settings.size} onChange={(v) => setSetting('size', v)} label="Text size" />
-        </div>
-        <div className="cream" style={{ borderRadius: 16, padding: '14px 16px', marginTop: 2 }}>
-          <div className="pray-name" style={{ marginTop: 0 }}>Sarah Mitchell</div>
-          <div className="point" style={{ marginTop: 8 }}><span className="bullet" /><span className="point-text">Wisdom as she starts the new job on Monday</span></div>
-        </div>
+        <span style={{ fontSize: 16, fontWeight: 600 }}>Make it easy to read</span>
+        <FontCards value={settings.font} onChange={(v) => setSetting('font', v)} />
+        <span className="label" style={{ marginTop: 4 }}>Text size · whole app</span>
+        <SizeSlider value={settings.size} onChange={(v) => setSetting('size', v)} />
+        <TextPreview />
       </div>
 
       <div className="surface stack" style={{ gap: 12 }}>

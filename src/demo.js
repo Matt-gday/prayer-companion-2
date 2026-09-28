@@ -70,5 +70,28 @@ export const makeDemoData = (t) => {
   solo(person('Rob', 'Allen', { points: [pt('Recovery after surgery', back(25))] }), 'occ', history(t, 16, 5, 12));
   solo(person('Grace', 'Warren'), 'occ', history(t, 16, 5, 20));
 
-  return { people, cards };
+  const req = (text) => ({ id: id('r'), text, added: back(3) });
+  const lp = (name, reqs = []) => ({ id: id('lp'), name, requests: reqs.map(req) });
+  const lists = [
+    {
+      id: id('l'), name: 'Growth group', created: back(60), history: [],
+      people: [
+        lp('Josh', ['Job interview on Thursday']),
+        lp('Nathan', ['His mum’s surgery', 'Exams next week']),
+        lp('Chris & Amy', ['Wisdom about moving house']),
+        lp('Priya', ['Settling into the new church']),
+        lp('Tom', ['Back pain', 'Patience with the kids']),
+        lp('Lily'),
+        lp('Ben', ['New baby due this month']),
+      ],
+      week: { start: back(1), ticks: {} },
+    },
+    {
+      id: id('l'), name: 'Staff team', created: back(30), history: [],
+      people: [lp('Anna', ['Planning the camp']), lp('Mike', ['Rest after a big term']), lp('Deb'), lp('Sam', ['His dad’s health'])],
+      week: { start: back(2), ticks: {} },
+    },
+  ];
+  lists[0].week.ticks = { [lists[0].people[0].id]: true, [lists[0].people[1].id]: true, [lists[0].people[2].id]: true };
+  return { people, cards, lists };
 };

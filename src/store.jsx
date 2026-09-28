@@ -30,7 +30,7 @@ const DEFAULT_SETTINGS = {
   demo: false,
 };
 
-const EMPTY = { people: [], cards: [] };
+const EMPTY = { people: [], cards: [], lists: [] };
 
 const load = (key, fallback) => {
   try {
@@ -62,7 +62,10 @@ export function StoreProvider({ children }) {
   const dataKey = demo ? KEYS.demoData : KEYS.data;
   const sessionKey = demo ? KEYS.demoSession : KEYS.session;
 
-  const [data, setData] = useState(() => load(dataKey, demo ? makeDemoData(today()) : EMPTY));
+  const [data, replaceData] = useState(() => load(dataKey, demo ? makeDemoData(today()) : EMPTY));
+  // Updates merge into the data, so changing people and cards never drops
+  // prayer lists (and the other way round).
+  const setData = useCallback((fn) => replaceData((d) => ({ ...d, ...(typeof fn === 'function' ? fn(d) : fn) })), []);
   const [session, setSession] = useState(() => load(sessionKey, null));
 
   const [toast, setToast] = useState(null);
@@ -75,6 +78,7 @@ export function StoreProvider({ children }) {
   useEffect(() => { save(KEYS.settings, settings); }, [settings]);
 
   const { people, cards } = data;
+  const lists = data.lists || [];
 
   const showToast = useCallback((message, undo) => {
     clearTimeout(toastTimer.current);
@@ -86,7 +90,7 @@ export function StoreProvider({ children }) {
 
   // Demo mode uses its own sample data; your real data is left untouched.
   const setDemo = useCallback((on) => {
-    setData(load(on ? KEYS.demoData : KEYS.data, on ? makeDemoData(today()) : EMPTY));
+    replaceData(load(on ? KEYS.demoData : KEYS.data, on ? makeDemoData(today()) : EMPTY));
     setSession(load(on ? KEYS.demoSession : KEYS.session, null));
     setSettings((s) => ({ ...s, demo: on }));
   }, []);
@@ -353,6 +357,64 @@ export function StoreProvider({ children }) {
     return addExtraCard();
   }, [activeSession, cards, people, addExtraCard]);
 
+  // ---------- prayer lists ----------
+  // Lists are separate from daily cards: their own people, requests and a
+  // weekly set of ticks. Past weeks are kept in history.
+
+  const editList = (listId, fn) =>
+    setData((d) => ({ lists: (d.lists || []).map((l) => (l.id === listId ? fn(l) : l)) }));
+  const editListPerson = (listId, personId, fn) =>
+    editList(listId, (l) => ({ ...l, people: l.people.map((p) => (p.id === personId ? fn(p) : p)) }));
+  const listPerson = (name) => ({ id: newId(), name: name.trim(), requests: [] });
+
+  const addList = useCallback((name, names = []) => {
+    const list = {
+      id: newId(), name: name.trim(), created: today(),
+      people: names.filter((n) => n.trim()).map(listPerson),
+      week: { start: today(), ticks: {} }, history: [],
+    };
+    setData((d) => ({ lists: [...(d.lists || []), list] }));
+    return list.id;
+  }, [setData]);
+
+  const renameList = useCallback((listId, name) => editList(listId, (l) => ({ ...l, name })), [setData]); // eslint-disable-line react-hooks/exhaustive-deps
+  const deleteList = useCallback((listId) => setData((d) => ({ lists: (d.lists || []).filter((l) => l.id !== listId) })), [setData]);
+  const addListPerson = useCallback((listId, name) => {
+    if (!name.trim()) return;
+    editList(listId, (l) => ({ ...l, people: [...l.people, listPerson(name)] }));
+  }, [setData]); // eslint-disable-line react-hooks/exhaustive-deps
+  const renameListPerson = useCallback((listId, personId, name) => editListPerson(listId, personId, (p) => ({ ...p, name })), [setData]); // eslint-disable-line react-hooks/exhaustive-deps
+  const removeListPerson = useCallback((listId, personId) =>
+    editList(listId, (l) => ({ ...l, people: l.people.filter((p) => p.id !== personId) })), [setData]); // eslint-disable-line react-hooks/exhaustive-deps
+  const moveListPerson = useCallback((listId, personId, toIndex) => editList(listId, (l) => {
+    const people = [...l.people];
+    const from = people.findIndex((p) => p.id === personId);
+    if (from < 0) return l;
+    const [moved] = people.splice(from, 1);
+    people.splice(Math.max(0, Math.min(toIndex, people.length)), 0, moved);
+    return { ...l, people };
+  }), [setData]); // eslint-disable-line react-hooks/exhaustive-deps
+  const addRequest = useCallback((listId, personId, text) => {
+    if (!text.trim()) return;
+    editListPerson(listId, personId, (p) => ({ ...p, requests: [...p.requests, { id: newId(), text: text.trim(), added: today() }] }));
+  }, [setData]); // eslint-disable-line react-hooks/exhaustive-deps
+  const editRequest = useCallback((listId, personId, reqId, text) =>
+    editListPerson(listId, personId, (p) => ({ ...p, requests: p.requests.map((r) => (r.id === reqId ? { ...r, text } : r)) })), [setData]); // eslint-disable-line react-hooks/exhaustive-deps
+  const removeRequest = useCallback((listId, personId, reqId) =>
+    editListPerson(listId, personId, (p) => ({ ...p, requests: p.requests.filter((r) => r.id !== reqId) })), [setData]); // eslint-disable-line react-hooks/exhaustive-deps
+  const toggleListTick = useCallback((listId, personId) => editList(listId, (l) => ({
+    ...l, week: { ...l.week, ticks: { ...l.week.ticks, [personId]: !l.week.ticks[personId] } },
+  })), [setData]); // eslint-disable-line react-hooks/exhaustive-deps
+  const newWeek = useCallback((listId, keepRequests) => editList(listId, (l) => ({
+    ...l,
+    history: [...(l.history || []), {
+      start: l.week.start, end: today(), ticks: l.week.ticks,
+      people: l.people.map((p) => ({ name: p.name, requests: p.requests.map((r) => r.text) })),
+    }],
+    week: { start: today(), ticks: {} },
+    people: keepRequests ? l.people : l.people.map((p) => ({ ...p, requests: [] })),
+  })), [setData]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ---------- backup ----------
 
   const exportBackup = useCallback(() => {
@@ -363,6 +425,7 @@ export function StoreProvider({ children }) {
       userName: settings.name,
       people: load(KEYS.data, EMPTY).people,
       cards: load(KEYS.data, EMPTY).cards,
+      lists: load(KEYS.data, EMPTY).lists || [],
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -380,29 +443,33 @@ export function StoreProvider({ children }) {
   const readBackup = useCallback((text) => {
     const parsed = JSON.parse(text);
     if (parsed && parsed.app === 'prayer-companion-2') {
-      return { kind: 'v2', people: parsed.people || [], cards: parsed.cards || [], userName: parsed.userName || '' };
+      return { kind: 'v2', people: parsed.people || [], cards: parsed.cards || [], lists: parsed.lists || [], userName: parsed.userName || '' };
     }
     if (isV1Backup(parsed)) return { kind: 'v1', ...importV1(parsed, today()) };
     throw new Error('not a backup');
   }, []);
 
   const restoreBackup = useCallback((restored) => {
-    save(KEYS.data, { people: restored.people, cards: restored.cards });
+    save(KEYS.data, { people: restored.people, cards: restored.cards, lists: restored.lists || [] });
     save(KEYS.session, null);
     setSettings((s) => ({ ...s, demo: false, name: s.name || restored.userName || '' }));
-    setData({ people: restored.people, cards: restored.cards });
+    replaceData({ people: restored.people, cards: restored.cards, lists: restored.lists || [] });
     setSession(null);
   }, []);
 
   const value = useMemo(() => ({
-    people, cards, settings, session: activeSession, toast, date,
+    people, cards, lists, settings, session: activeSession, toast, date,
+    addList, renameList, deleteList, addListPerson, renameListPerson, removeListPerson, moveListPerson,
+    addRequest, editRequest, removeRequest, toggleListTick, newWeek,
     setSetting, setDemo, setLimit, showToast, dismissToast: () => setToast(null),
     updatePerson, updateCard, addPoint, setPointText, setPointStatus, movePoint, removePoint, answerPoint,
     addSolo, addGroup, addToGroup, makeGroupFrom, removeFromGroup, splitGroup, setArchived, deleteCard, deletePerson,
     startToday, setIndex, setView, toggleTick, setCardPrayed, keepPraying, addExtraCard,
     prayedToday: activeSession ? prayedCount(activeSession, cards, people) : 0,
     exportBackup, readBackup, restoreBackup,
-  }), [people, cards, settings, activeSession, toast, date, setSetting, setDemo, setLimit, showToast,
+  }), [people, cards, lists, settings, activeSession,
+    addList, renameList, deleteList, addListPerson, renameListPerson, removeListPerson, moveListPerson,
+    addRequest, editRequest, removeRequest, toggleListTick, newWeek, toast, date, setSetting, setDemo, setLimit, showToast,
     updatePerson, updateCard, addPoint, setPointText, setPointStatus, movePoint, removePoint, answerPoint,
     addSolo, addGroup, addToGroup, makeGroupFrom, removeFromGroup, splitGroup, setArchived, deleteCard, deletePerson,
     startToday, setIndex, setView, toggleTick, setCardPrayed, keepPraying, addExtraCard, exportBackup, readBackup, restoreBackup]);

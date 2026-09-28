@@ -9,7 +9,8 @@ import Settings from './screens/Settings.jsx';
 import Help from './screens/Help.jsx';
 import Welcome from './screens/Welcome.jsx';
 import EditCard from './screens/EditCard.jsx';
-import AddNew from './screens/AddNew.jsx';
+import AddFlow from './screens/AddFlow.jsx';
+import { ListsHome, ListPage } from './screens/Lists.jsx';
 
 // Re-check the clock every minute and when the app comes back to the front,
 // so "time of day" skies move on by themselves.
@@ -32,6 +33,7 @@ function useSky(settings, now) {
     const root = document.documentElement;
     root.dataset.font = settings.font;
     root.dataset.size = settings.size;
+    root.style.setProperty('--z', { s: 0.9, m: 0.95, l: 1, xl: 1.1 }[settings.size] || 1);
     root.style.setProperty('--acc', sky.go);
     root.style.setProperty('--ring', sky.ring);
     root.style.setProperty('--glass', sky.glass || DEFAULT_GLASS);
@@ -60,15 +62,14 @@ export default function App() {
 
   const [screen, setScreen] = useState({ name: 'home' });
   const [editing, setEditing] = useState(null); // card id being edited in the sheet
-  const [adding, setAdding] = useState(false);
 
   const go = (name, params = {}) => { setScreen({ name, ...params }); window.scrollTo(0, 0); };
 
   if (!settings.onboarded) {
-    return <><SkyBackground skyKey={skyKey} /><Welcome skyKey={skyKey} /></>;
+    return <div className="onb"><div className="onb-bg" /><Welcome skyKey={skyKey} now={now} /></div>;
   }
 
-  const nav = { go, edit: setEditing, add: () => setAdding(true), current: screen.name, from: screen.from, skyKey, now };
+  const nav = { go, edit: setEditing, add: () => go('add', { from: screen.name }), current: screen.name, from: screen.from, skyKey, now };
 
   let content;
   switch (screen.name) {
@@ -77,6 +78,9 @@ export default function App() {
     case 'card': content = <CardPage nav={nav} cardId={screen.cardId} from={screen.from} />; break;
     case 'settings': content = <Settings nav={nav} focus={screen.focus} />; break;
     case 'help': content = <Help nav={nav} />; break;
+    case 'add': content = <AddFlow nav={nav} from={screen.from} />; break;
+    case 'lists': content = <ListsHome nav={nav} />; break;
+    case 'list': content = <ListPage nav={nav} listId={screen.listId} />; break;
     default: content = <Home nav={nav} />;
   }
 
@@ -85,7 +89,6 @@ export default function App() {
       <SkyBackground skyKey={skyKey} quiet={screen.name !== 'home'} />
       {content}
       {editing && <EditCard cardId={editing} nav={nav} onClose={() => setEditing(null)} />}
-      {adding && <AddNew nav={nav} onClose={() => setAdding(false)} />}
       {toast && (
         <div className="toast" role="status" key={toast.id}>
           <span>{toast.message}</span>
