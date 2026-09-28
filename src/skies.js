@@ -13,15 +13,15 @@ export const SKIES = {
   // Time of day
   morning: {
     name: 'Sunrise', times: '5–10am', sun: true, top: '#27336E', ring: '#FFFFFF', go: '#D9608F',
-    bg: 'linear-gradient(180deg,#27336E 0%,#4E4A94 18%,#8C62A8 34%,#D57BA6 50%,#F4929A 62%,#FBA77E 76%,#FFC46E 90%,#FFDE8C 100%)',
+    bg: 'linear-gradient(180deg,#27336E 0%,#4E4A94 18%,#8C62A8 34%,#D57BA6 50%,#F4929A 62%,#FBA77E 76%,#FDBA62 90%,#FFCB72 100%)',
   },
   midday: {
-    name: 'Midday', times: '10am–2pm', top: '#2F6FC4', ring: '#FFFFFF', go: '#2F6FC4', glass: 'rgba(20,40,80,.28)',
-    bg: 'linear-gradient(180deg,#2F6FC4 0%,#4A8FD8 25%,#7DB5E6 50%,#B5D8EE 72%,#F2E6C4 90%,#FFF1C8 100%)',
+    name: 'Midday', times: '10am–2pm', top: '#1D5BB5', ring: '#FFFFFF', go: '#1D5BB5', glass: 'rgba(15,35,75,.3)',
+    bg: 'linear-gradient(180deg,#1D5BB5 0%,#2E74CC 24%,#4F92DA 46%,#7AB0E0 66%,#B9C8C8 82%,#E3B77E 94%,#E9AE69 100%)',
   },
   afternoon: {
-    name: 'Afternoon', times: '2–5pm', top: '#3E6BB0', ring: '#FFFFFF', go: '#E2913A',
-    bg: 'linear-gradient(180deg,#3E6BB0 0%,#6C8FC4 22%,#B5A8C0 44%,#E9B98E 66%,#F6C26A 84%,#FFD57A 100%)',
+    name: 'Afternoon', times: '2–5pm', top: '#2E5AA3', ring: '#FFFFFF', go: '#D9822E',
+    bg: 'linear-gradient(180deg,#2E5AA3 0%,#5578BA 22%,#9187B4 44%,#D9966F 66%,#EDA352 84%,#F3B04A 100%)',
   },
   sunset: {
     name: 'Sunset', times: '5–6:30pm', top: '#3A2F7A', ring: '#FFE3B0', go: '#E4637A',

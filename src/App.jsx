@@ -38,6 +38,11 @@ const lastColour = (bg) => (bg.match(/#[0-9A-Fa-f]{6}/g) || []).pop();
 const setScreenHeight = () => {
   const h = Math.max(window.screen?.height || 0, window.innerHeight, document.documentElement.clientHeight);
   document.documentElement.style.setProperty('--screen-h', `${h}px`);
+  // From the home screen, the strip below the page already covers the home
+  // bar, so don't leave that room again at the bottom of each screen.
+  const standalone = window.navigator.standalone || window.matchMedia?.('(display-mode: standalone)').matches;
+  const strip = standalone ? Math.max(0, (window.screen?.height || 0) - window.innerHeight) : 0;
+  document.documentElement.style.setProperty('--strip', `${strip}px`);
 };
 
 const STARS = [
