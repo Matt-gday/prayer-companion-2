@@ -120,7 +120,7 @@ export function ListPage({ nav, listId }) {
           const ticked = !!list.week.ticks[p.id];
           return (
             <div key={p.id} className={`list-person ${ticked && !editing ? 'done' : ''}`}
-              style={drag?.id === p.id ? { transform: `translateY(${drag.dy}px)`, background: 'rgba(250,238,226,1)', position: 'relative', zIndex: 2, boxShadow: '0 6px 18px rgba(0,0,0,.15)', borderRadius: 10 } : undefined}>
+              style={drag?.id === p.id ? { transform: `translateY(${drag.dy}px)`, background: 'rgba(255,255,255,.95)', position: 'relative', zIndex: 2, boxShadow: '0 6px 18px rgba(0,0,0,.15)', borderRadius: 10 } : undefined}>
               {editing ? (
                 <span className="grip" role="button" aria-label={`Drag to move ${p.name}`}
                   onPointerDown={(e) => onGripDown(e, p.id, i)} onPointerMove={(e) => drag && setDrag({ ...drag, dy: e.clientY - drag.startY })}

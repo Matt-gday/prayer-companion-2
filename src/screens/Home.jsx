@@ -83,7 +83,7 @@ export default function Home({ nav }) {
         </>
       ) : (
         <>
-          <div className="home-ring" style={{ marginTop: 8 }}>
+          <div className="home-ring-wrap"><div className="home-ring">
             <svg viewBox="0 0 200 200" aria-hidden="true">
               <circle cx="100" cy="100" r={R} fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.26)" strokeWidth="13" />
               {frac > 0 && (
@@ -94,14 +94,14 @@ export default function Home({ nav }) {
             </svg>
             <div className="centre" aria-live="polite">
               {!started ? (
-                <><span className="read" style={{ fontSize: 60, fontWeight: 500, lineHeight: 1 }}>{target}</span><span className="small" style={{ opacity: 0.9 }}>cards today</span></>
+                <><span className="read num">{target}</span><span className="lbl">cards today</span></>
               ) : extra > 0 ? (
-                <><span className="read" style={{ fontSize: 50, fontWeight: 500, lineHeight: 1 }}>{limit}<span className="counter-extra" style={{ fontSize: 30 }}> +{extra}</span></span><span className="small" style={{ opacity: 0.9 }}>{prayedToday} prayed today</span></>
+                <><span className="read num" style={{ fontSize: '23cqh' }}>{limit}<span className="counter-extra"> +{extra}</span></span><span className="lbl">{prayedToday} prayed today</span></>
               ) : (
-                <><span className="read" style={{ fontSize: 60, fontWeight: 500, lineHeight: 1 }}>{prayedToday}</span><span className="small" style={{ opacity: 0.9 }}>of {target} prayed</span></>
+                <><span className="read num">{prayedToday}</span><span className="lbl">of {target} prayed</span></>
               )}
             </div>
-          </div>
+          </div></div>
 
           {counts.length > 0 && (
             <div className="row" style={{ flexWrap: 'wrap', justifyContent: 'center', gap: 8 }}>
@@ -115,8 +115,6 @@ export default function Home({ nav }) {
               Raise your daily number in <button className="link" style={{ minHeight: 0, fontSize: 13, color: 'inherit', textDecoration: 'underline' }} onClick={() => nav.go('settings')}>Settings</button> or turn off Every day on some cards.
             </div>
           )}
-
-          <div style={{ flex: 1 }} />
 
           <button className="home-go" onClick={begin}>
             <span className="stack" style={{ gap: 2 }}>
