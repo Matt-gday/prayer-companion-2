@@ -61,12 +61,14 @@ export default function Welcome({ skyKey, now }) {
         <div style={{ flex: 1 }} />
         <img className="app-icon" src="./apple-touch-icon.png" alt="" style={{ alignSelf: 'center' }} />
         <h1 className="big-title" style={{ textAlign: 'center', marginTop: 10 }}>Welcome to<br />Prayer Companion</h1>
-        <p style={{ textAlign: 'center', lineHeight: 1.5, opacity: 0.88, fontSize: 16 }}>A simple way to keep praying for the people in your life, a few each day.</p>
-        <div style={{ flex: 1 }} />
-        <label className="field" style={{ fontSize: 13, color: 'rgba(255,255,255,.88)' }}>What should we call you?
-          <input className="input" style={{ height: 54, fontSize: 18, background: 'var(--glass)' }} placeholder="Your first name"
+        <p style={{ textAlign: 'center', lineHeight: 1.5, opacity: 0.88, fontSize: 16 }}>A simple way to keep praying for the people in your life each day.</p>
+        {/* The name sits with the welcome, near the middle, big and centred. */}
+        <label className="field" style={{ fontSize: 15, color: 'rgba(255,255,255,.9)', textAlign: 'center', marginTop: 18 }}>What should we call you?
+          <input className="input" style={{ height: 64, fontSize: 26, fontWeight: 600, textAlign: 'center', borderRadius: 20, borderWidth: 1.5, borderColor: 'rgba(255,255,255,.35)', background: 'rgba(255,255,255,.12)', color: '#fff' }}
+            placeholder="Your first name" autoComplete="given-name"
             value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') next(); }} />
         </label>
+        <div style={{ flex: 1.3 }} />
         {cont()}
       </div>
     );

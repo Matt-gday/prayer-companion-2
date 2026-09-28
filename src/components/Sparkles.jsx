@@ -16,7 +16,8 @@ export default function Sparkles() {
 
     const spawn = (anywhere) => ({
       x: R(0, W), y: anywhere ? R(0, H) : H + 4, t: R(0, 1000), ph: R(0, 6.28),
-      r: R(0.6, 1.7), a: R(0.35, 0.8), vx: R(-2, 2), vy: R(-9, -3),
+      // Sized for a real phone screen (the mockup was viewed larger).
+      r: R(1, 2.6), a: R(0.5, 0.95), vx: R(-2, 2), vy: R(-9, -3),
     });
     const size = () => {
       const dpr = Math.min(2, window.devicePixelRatio || 1);

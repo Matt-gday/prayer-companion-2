@@ -130,7 +130,11 @@ export default function Settings({ nav, focus }) {
         <div className="list-row">
           <span className="grow stack" style={{ gap: 2 }}>
             <span>Sparkles on Home</span>
-            <span className="tiny sub">Tiny specks of light drifting gently behind the Home screen.</span>
+            <span className="tiny sub">
+              {window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+                ? 'Hidden because Reduce Motion is on in your phone’s Accessibility settings.'
+                : 'Tiny specks of light drifting gently behind the Home screen.'}
+            </span>
           </span>
           <Switch checked={settings.sparkles !== false} label="Sparkles on Home" onChange={(on) => setSetting('sparkles', on)} />
         </div>
