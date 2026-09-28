@@ -4,7 +4,7 @@ import { formatLongDate, PRIORITIES, PRIORITY_LABEL, isPrayable, daysBetween, ca
 import { buildList, everyDayCheck, isCardDone, nextCards } from '../scheduler.js';
 import { greetingFor } from '../skies.js';
 import { FitText } from '../components/ui.jsx';
-import { Next, Users, Download, Plus, Cog, List } from '../components/Icons.jsx';
+import { Next, Users, Download, Plus, Cog, List, Check } from '../components/Icons.jsx';
 
 export default function Home({ nav }) {
   const { people, cards, lists, settings, session, date, startToday, keepPraying, prayedToday } = useStore();
@@ -94,6 +94,7 @@ export default function Home({ nav }) {
                   style={{ transition: 'stroke-dashoffset .6s ease' }} />
               )}
             </svg>
+            {done && <span className="seal" aria-label="Everyone prayed for"><Check /></span>}
             <div className="centre" aria-live="polite">
               {!started ? (
                 <><span className="read num">{target}</span><span className="lbl">cards today</span></>

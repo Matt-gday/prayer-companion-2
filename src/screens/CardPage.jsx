@@ -7,6 +7,7 @@ import {
 import { TopBar, PriorityPill } from '../components/ui.jsx';
 import { isEveryDay } from '../scheduler.js';
 import { Check, Clock } from '../components/Icons.jsx';
+import AddPointInline from '../components/AddPointInline.jsx';
 
 const duration = (from, to) => {
   const days = Math.max(1, daysBetween(from, to));
@@ -71,13 +72,14 @@ export default function CardPage({ nav, cardId, from }) {
 
       <div className="surface cream stack">
         <span className="label">Praying for now</span>
-        {current.length === 0 && <span className="sub small">No prayer points yet. Tap Edit to add some.</span>}
+        {current.length === 0 && <span className="sub small">No prayer points yet.</span>}
         {current.map((pt) => (
           <div key={pt.id} className="point" style={{ '--point-size': '17px' }}>
             <span className="bullet" />
             <span className="point-text" style={{ lineHeight: 1.4 }}>{who(pt)}{pt.text}</span>
           </div>
         ))}
+        <AddPointInline target={solo && person ? { kind: 'person', id: person.id } : { kind: 'card', id: card.id }} />
       </div>
 
       {answered.length > 0 && (

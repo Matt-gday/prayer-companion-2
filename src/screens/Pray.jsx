@@ -6,7 +6,8 @@ import {
 } from '../model.js';
 import { isCardDone } from '../scheduler.js';
 import { Tick, PriorityPill } from '../components/ui.jsx';
-import { Back, Next, Prev, List, Cards, Pencil, Check, Clock, Plus } from '../components/Icons.jsx';
+import AddPointInline from '../components/AddPointInline.jsx';
+import { Back, Next, Prev, List, Cards, Pencil, Check, Clock } from '../components/Icons.jsx';
 
 function ViewToggle({ view, onChange }) {
   return (
@@ -48,7 +49,7 @@ export default function Pray({ nav }) {
     const prev = prevDone.current;
     prevDone.current = { id: current?.id, done: currentDone };
     if (!current || !inCards || !prev || prev.id !== current.id || prev.done || !currentDone) return undefined;
-    const t = setTimeout(() => goRef.current?.(1), 1000);
+    const t = setTimeout(() => goRef.current?.(1), 1800);
     return () => clearTimeout(t);
   }, [current?.id, currentDone, inCards]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -86,7 +87,7 @@ export default function Pray({ nav }) {
     if (finishReady && dir > 0) { setFinishAsked(true); return; }
     setLeaving({ id: card.id, dir, from });
     clearTimeout(leaveTimer.current);
-    leaveTimer.current = setTimeout(() => setLeaving(null), 450);
+    leaveTimer.current = setTimeout(() => setLeaving(null), 700);
     if (dir > 0 && index === list.length - 1) {
       if (session.keepGoing) {
         if (!addExtraCard()) setNoneLeft(true);
@@ -175,9 +176,7 @@ export default function Pray({ nav }) {
 }
 
 function PrayerCard({ card, onEdit }) {
-  const { people, session, date, toggleTick, addPoint } = useStore();
-  const [adding, setAdding] = useState(false);
-  const [draft, setDraft] = useState('');
+  const { people, session, date, toggleTick } = useStore();
   const members = cardMembers(card, people);
   const keys = tickKeys(card, people);
   const ticks = session.ticks[card.id] || {};
@@ -189,12 +188,6 @@ function PrayerCard({ card, onEdit }) {
   const pointTarget = solo && person ? { kind: 'person', id: person.id } : { kind: 'card', id: card.id };
   const mainPoints = solo && person ? activePoints(person.points) : activePoints(card.points);
   const org = solo && person && !isOrg(person) ? person.organisation : '';
-
-  const saveDraft = () => {
-    if (draft.trim()) addPoint(pointTarget, draft);
-    setDraft('');
-    setAdding(false);
-  };
 
   return (
     <>
@@ -244,16 +237,7 @@ function PrayerCard({ card, onEdit }) {
           </div>
         )}
 
-        {adding ? (
-          <div className="row" style={{ gap: 8 }}>
-            <input className="input" autoFocus value={draft} placeholder="New prayer point" aria-label="New prayer point"
-              onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') saveDraft(); if (e.key === 'Escape') setAdding(false); }}
-              onBlur={() => { if (!draft.trim()) { setDraft(''); setAdding(false); } }} />
-            <button className="btn accent small" onPointerDown={(e) => e.preventDefault()} onClick={saveDraft}>Add</button>
-          </div>
-        ) : (
-          <button className="link" style={{ alignSelf: 'flex-start', fontSize: 14 }} onClick={() => setAdding(true)}><Plus />Add prayer point</button>
-        )}
+        <AddPointInline key={card.id} target={pointTarget} />
       </div>
     </>
   );
