@@ -111,7 +111,7 @@ export default function Pray({ nav }) {
   }
 
   return (
-    <div className="screen fixed" style={{ paddingBottom: 'max(10px, calc(env(safe-area-inset-bottom) + 14px - var(--strip, 0px)))' }}>
+    <div className="screen fixed" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
       {topbar}
       <div key={card.id} className={`pray-card ${slide}`}
         onTouchStart={(e) => { touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
