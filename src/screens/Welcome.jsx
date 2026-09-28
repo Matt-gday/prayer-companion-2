@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { useStore } from '../store.jsx';
 import { Back, Next } from '../components/Icons.jsx';
 import { SkyChooser, FontCards, SizeSlider, TextPreview } from '../components/Choosers.jsx';
+import { scrollToTop } from '../scroll.js';
 
 const STEPS = 4;
 
@@ -15,8 +16,8 @@ export default function Welcome({ skyKey, now }) {
   const [pending, setPending] = useState(null);
   const fileRef = useRef(null);
 
-  const next = () => { setStep((s) => Math.min(STEPS, s + 1)); window.scrollTo(0, 0); };
-  const back = () => { setStep((s) => Math.max(1, s - 1)); window.scrollTo(0, 0); };
+  const next = () => { setStep((s) => Math.min(STEPS, s + 1)); scrollToTop(); };
+  const back = () => { setStep((s) => Math.max(1, s - 1)); scrollToTop(); };
 
   const begin = () => {
     if (pending) restoreBackup(pending);

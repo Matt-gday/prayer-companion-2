@@ -58,7 +58,7 @@ export default function Home({ nav }) {
   const backupText = backupAge == null ? 'Not saved yet' : backupAge === 0 ? 'Saved today' : `${backupAge} day${backupAge === 1 ? '' : 's'} ago`;
 
   return (
-    <div className="screen" style={{ gap: 16 }}>
+    <div className="screen home" style={{ gap: 16 }}>
       <div className="spread" style={{ marginTop: 4 }}>
         <span className="small" style={{ opacity: 0.95 }}>{formatLongDate(date)}{settings.demo ? ' · Demo' : ''}</span>
         <button className="icon-btn glass" onClick={() => nav.go('settings')} aria-label="Settings"><Cog /></button>

@@ -1,7 +1,7 @@
 // Pickers shared by the welcome steps and Settings, so choosing your look
 // works the same way on day one and later on.
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SKIES, DAY_SKIES, COLOUR_SKIES, skyMode, skyForDay, skyForTime, nextSkyText } from '../skies.js';
 import SkyThumb from './SkyThumb.jsx';
 import HomePreview from './HomePreview.jsx';
@@ -30,14 +30,6 @@ export function SkyChooser({ sky, randomPool, onChange, now, currentKey, preview
   const timeKey = skyForTime(now);
   const todayRandom = skyForDay(pool, now);
   const chosen = SKIES[sky] ? sky : currentKey;
-  const carousel = useRef(null);
-
-  // Bring the chosen sky into view in the carousel.
-  useEffect(() => {
-    if (mode !== 'choose' || !carousel.current) return;
-    const el = carousel.current.querySelector('[aria-pressed="true"]');
-    if (el) el.scrollIntoView({ block: 'nearest', inline: 'center' });
-  }, [mode, chosen]);
 
   const togglePool = (k) => {
     const next = pool.includes(k) ? pool.filter((x) => x !== k) : [...pool, k];
@@ -67,16 +59,7 @@ export function SkyChooser({ sky, randomPool, onChange, now, currentKey, preview
         </div>
       )}
 
-      {mode === 'choose' && (
-        <>
-          <div style={{ alignSelf: 'center' }}><HomePreview skyKey={chosen} name={previewName} width={180} /></div>
-          <div className="sky-carousel" ref={carousel}>
-            {[...COLOUR_SKIES, ...DAY_SKIES].map((k) => (
-              <SkyThumb key={k} skyKey={k} selected={k === chosen} onClick={() => onChange({ sky: k })} />
-            ))}
-          </div>
-        </>
-      )}
+      {mode === 'choose' && <PreviewCarousel chosen={chosen} name={previewName} onPick={(k) => onChange({ sky: k })} />}
 
       <div className="stack" style={{ gap: 8 }}>
         <OptionCard selected={mode === 'time'} onClick={() => onChange({ sky: 'time' })} title="Time of day"
@@ -84,7 +67,7 @@ export function SkyChooser({ sky, randomPool, onChange, now, currentKey, preview
         <OptionCard selected={mode === 'random'} onClick={() => onChange({ sky: 'random' })} title="Random daily"
           text={mode === 'random' ? `Today it’s ${SKIES[todayRandom].name}. Tap a colour to leave it out.` : 'A surprise colour each day'} />
         <OptionCard selected={mode === 'choose'} onClick={() => onChange({ sky: chosen })} title={mode === 'choose' ? `Choose one · ${SKIES[chosen].name}` : 'Choose one'}
-          text={mode === 'choose' ? 'Swipe through and tap your favourite' : 'Pick a favourite that stays'} />
+          text={mode === 'choose' ? 'Swipe to see each one; the one showing is chosen' : 'Pick a favourite that stays'} />
       </div>
     </div>
   );
@@ -128,6 +111,49 @@ export function TextPreview() {
       </div>
       <div className="cream" style={{ padding: '12px 14px' }}>
         <div className="point"><span className="bullet" /><span className="point-text">Wisdom as she starts the new job on Monday</span></div>
+      </div>
+    </div>
+  );
+}
+
+const CAROUSEL = [...COLOUR_SKIES, ...DAY_SKIES];
+const CARD_W = 200;
+const CARD_GAP = 18;
+
+// Swipe through full mini home screens. Whichever one settles in the middle
+// is chosen.
+function PreviewCarousel({ chosen, name, onPick }) {
+  const ref = useRef(null);
+  const timer = useRef(null);
+  const [shown, setShown] = useState(Math.max(0, CAROUSEL.indexOf(chosen)));
+
+  useEffect(() => {
+    const el = ref.current;
+    if (el) el.scrollLeft = Math.max(0, CAROUSEL.indexOf(chosen)) * (CARD_W + CARD_GAP);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const onScroll = () => {
+    const el = ref.current;
+    const i = Math.max(0, Math.min(CAROUSEL.length - 1, Math.round(el.scrollLeft / (CARD_W + CARD_GAP))));
+    setShown(i);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => { if (CAROUSEL[i] !== chosen) onPick(CAROUSEL[i]); }, 140);
+  };
+  const goTo = (i) => ref.current?.scrollTo({ left: i * (CARD_W + CARD_GAP), behavior: 'smooth' });
+
+  return (
+    <div className="stack" style={{ gap: 10 }}>
+      <div ref={ref} className="preview-carousel" onScroll={onScroll} role="listbox" aria-label="Skies">
+        {CAROUSEL.map((k, i) => (
+          <button key={k} role="option" aria-selected={i === shown} aria-label={SKIES[k].name} onClick={() => goTo(i)}
+            style={{ width: CARD_W, flexShrink: 0, scrollSnapAlign: 'center', opacity: i === shown ? 1 : 0.55, transform: i === shown ? 'none' : 'scale(.92)', transition: 'opacity .2s, transform .2s' }}>
+            <HomePreview skyKey={k} name={name} width={CARD_W} />
+          </button>
+        ))}
+      </div>
+      <div style={{ textAlign: 'center', fontWeight: 600, fontSize: 16 }}>{SKIES[CAROUSEL[shown]].name}</div>
+      <div className="row" style={{ justifyContent: 'center', gap: 5 }} aria-hidden="true">
+        {CAROUSEL.map((k, i) => <span key={k} style={{ width: i === shown ? 16 : 6, height: 6, borderRadius: 3, background: i === shown ? '#fff' : 'rgba(255,255,255,.35)', transition: 'width .2s' }} />)}
       </div>
     </div>
   );

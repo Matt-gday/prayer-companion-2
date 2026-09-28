@@ -4,6 +4,7 @@ import { personName, isPrayable, PRIORITY_LABEL } from '../model.js';
 import { estimateIntervals, describeInterval } from '../scheduler.js';
 import { PriorityPicker, Switch } from '../components/ui.jsx';
 import { OptionCard } from '../components/Choosers.jsx';
+import { scrollToTop } from '../scroll.js';
 import { Back, Next, Close, Users, Building, Plus } from '../components/Icons.jsx';
 
 const PersonIcon = () => (
@@ -45,7 +46,7 @@ export default function AddFlow({ nav, from }) {
 
   const addMember = (m) => { setMembers([...members, { key: Math.random().toString(36).slice(2), ...m }]); setTyping(''); setChild(false); };
 
-  const goDetails = () => { setError(''); setStep(2); window.scrollTo(0, 0); };
+  const goDetails = () => { setError(''); setStep(2); scrollToTop(); };
   const goPoints = () => {
     if (kind === 'person' && !first.trim() && !last.trim()) return setError('Enter their name');
     if (kind === 'org' && !org.trim()) return setError('Enter the organisation’s name');
@@ -54,7 +55,7 @@ export default function AddFlow({ nav, from }) {
     if (kind === 'group' && typing.trim()) addMember({ name: typing.trim(), isChild: child });
     setError('');
     setStep(3);
-    window.scrollTo(0, 0);
+    scrollToTop();
   };
   const addPoint = () => { if (draft.trim()) { setPoints([...points, draft.trim()]); setDraft(''); } };
 
