@@ -204,8 +204,11 @@ select.input { appearance: none; }
 .slide-right { animation: slide-right .22s ease-out; }
 
 /* Home */
-.home-ring-wrap { flex: 1 1 0; min-height: 110px; display: flex; align-items: center; justify-content: center; }
-.home-ring { position: relative; height: 100%; max-height: min(62vw, 230px); aspect-ratio: 1; container-type: size; }
+/* The ring and pills stay together, centred in the space left over. The ring
+   grows up to full size, and shrinks if there isn't room. */
+.home-ring-wrap { flex: 1 1 0; min-height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; }
+.home-ring { position: relative; flex: 0 1 min(62vw, 230px); min-height: 100px; aspect-ratio: 1; container-type: size; }
+.home-ring-wrap > .row { flex-shrink: 0; }
 .home-ring .num { font-size: 27cqh; font-weight: 500; line-height: 1; }
 .home-ring .num .counter-extra { font-size: 60%; }
 .home-ring .lbl { font-size: 6.4cqh; opacity: .9; }
@@ -342,4 +345,12 @@ select.input { appearance: none; }
 
 /* Home priority pills: larger, and they grow and shrink with the text size. */
 .home-pill { font-size: calc(var(--point-size) * 0.88); padding: 0.45em 0.95em 0.45em 0.75em; gap: 0.45em; }
+/* Portrait only. iPhones can't lock a home-screen app's rotation, so if the
+   phone is turned sideways, ask to turn it back. */
+.rotate-note { display: none; }
+@media (orientation: landscape) and (max-height: 500px) {
+  .rotate-note { display: flex; position: fixed; inset: 0; z-index: 1000; flex-direction: column; gap: 14px; align-items: center; justify-content: center;
+    background: #141E46; color: #fff; font: 600 18px/1.4 var(--ui, system-ui, sans-serif); text-align: center; padding: 24px; }
+  .rotate-note svg { width: 44px; height: 44px; }
+}
 .home-pill .dot { width: 0.7em; height: 0.7em; border-radius: 50%; }

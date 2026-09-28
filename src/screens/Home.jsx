@@ -64,7 +64,7 @@ export default function Home({ nav }) {
         <button className="icon-btn glass" onClick={() => nav.go('settings')} aria-label="Settings"><Cog /></button>
       </div>
 
-      <div>
+      <div style={{ textAlign: 'center' }}>
         {settings.name && <div style={{ fontSize: 19, opacity: 0.92 }}>{greetingFor(nav.now)},</div>}
         <h1 className="title" style={{ fontSize: settings.name ? 58 : 46, lineHeight: 1.02 }}>{settings.name || greetingFor(nav.now)}</h1>
       </div>
@@ -101,13 +101,14 @@ export default function Home({ nav }) {
                 <><span className="read num">{prayedToday}</span><span className="lbl">of {target} prayed</span></>
               )}
             </div>
-          </div></div>
+          </div>
 
           {counts.length > 0 && (
             <div className="row" style={{ flexWrap: 'wrap', justifyContent: 'center', gap: 8 }}>
               {counts.map(([p, n]) => <span key={p} className="pill home-pill"><span className={`dot dot-${p}`} />{PRIORITY_LABEL[p]} {n}</span>)}
             </div>
           )}
+          </div>
 
           {everyDay.full && (
             <div className="warn">
