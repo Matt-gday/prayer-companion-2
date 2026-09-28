@@ -22,9 +22,9 @@ export default function AddFlow({ nav, from }) {
   const [last, setLast] = useState('');
   const [org, setOrg] = useState('');
   const [groupName, setGroupName] = useState('');
-  const [members, setMembers] = useState([]); // { key, name, existingId?, isChild }
+  const [members, setMembers] = useState([]); // { key, name, existingId? } or a new person's details
   const [typing, setTyping] = useState('');
-  const [child, setChild] = useState(false);
+  const [newbie, setNewbie] = useState(null); // the new person being filled in
   const [priority, setPriority] = useState('med');
   const [everyDay, setEveryDay] = useState(false);
   const [points, setPoints] = useState([]);
@@ -44,15 +44,41 @@ export default function AddFlow({ nav, from }) {
     ? people.filter((p) => !p.archived && !members.some((m) => m.existingId === p.id) && personName(p).toLowerCase().includes(q)).slice(0, 4)
     : [];
 
-  const addMember = (m) => { setMembers([...members, { key: Math.random().toString(36).slice(2), ...m }]); setTyping(''); setChild(false); };
+  const addMember = (m) => { setMembers([...members, { key: Math.random().toString(36).slice(2), ...m }]); setTyping(''); };
+
+  // Someone new: open their details, as a full person unless changed.
+  const surname = () => (groupName.match(/^the\s+(.+?)\s+(family|household)$/i) || [])[1] || '';
+  const startNew = (text) => {
+    const [f, ...rest] = text.trim().split(/\s+/);
+    setNewbie({ firstName: f || '', lastName: rest.join(' ') || surname(), organisation: '', points: [], draft: '', isChild: false });
+    setTyping('');
+    setError('');
+  };
+  const saveNewbie = () => {
+    const n = newbie;
+    if (!n.firstName.trim()) { setError('Enter their first name'); return false; }
+    const points = n.draft.trim() ? [...n.points, n.draft.trim()] : n.points;
+    const full = !n.isChild;
+    addMember({
+      name: `${n.firstName.trim()} ${full ? n.lastName.trim() : ''}`.trim(),
+      firstName: n.firstName.trim(),
+      lastName: n.lastName.trim(),
+      organisation: full ? n.organisation.trim() : '',
+      points: full ? points : [],
+      isChild: n.isChild,
+    });
+    setNewbie(null);
+    return true;
+  };
 
   const goDetails = () => { setError(''); setStep(2); scrollToTop(); };
   const goPoints = () => {
     if (kind === 'person' && !first.trim() && !last.trim()) return setError('Enter their name');
     if (kind === 'org' && !org.trim()) return setError('Enter the organisation’s name');
     if (kind === 'group' && !groupName.trim()) return setError('Enter a name for the group');
-    if (kind === 'group' && members.length === 0 && !typing.trim()) return setError('Add at least one person');
-    if (kind === 'group' && typing.trim()) addMember({ name: typing.trim(), isChild: child });
+    if (kind === 'group' && newbie && !saveNewbie()) return undefined;
+    if (kind === 'group' && typing.trim()) { startNew(typing); return setError('Check their details, then tap Add to group'); }
+    if (kind === 'group' && members.length === 0 && !newbie) return setError('Add at least one person');
     setError('');
     setStep(3);
     scrollToTop();
@@ -69,7 +95,9 @@ export default function AddFlow({ nav, from }) {
       addGroup({
         name: groupName, priority, everyDay: ed, points: pts,
         existingIds: members.filter((m) => m.existingId).map((m) => m.existingId),
-        newMembers: members.filter((m) => !m.existingId).map((m) => ({ ...split(m.name), isChild: m.isChild })),
+        newMembers: members.filter((m) => !m.existingId).map((m) => (m.firstName !== undefined
+          ? { firstName: m.firstName, lastName: m.lastName, organisation: m.organisation, points: m.points, isChild: m.isChild }
+          : { ...split(m.name), isChild: m.isChild })),
       });
     }
     showToast(`Added ${title}`);
@@ -140,10 +168,15 @@ export default function AddFlow({ nav, from }) {
                 ))}
               </div>
             )}
-            <input className="input" placeholder="Type a name" aria-label="Add someone to the group" value={typing}
-              onChange={(e) => { setTyping(e.target.value); setError(''); }}
-              onKeyDown={(e) => { if (e.key === 'Enter' && typing.trim()) addMember({ name: typing.trim(), isChild: child }); }} />
-            {q && (
+            {newbie ? (
+              <NewPersonPanel person={newbie} onChange={(patch) => { setNewbie({ ...newbie, ...patch }); setError(''); }}
+                onAdd={saveNewbie} onCancel={() => { setNewbie(null); setError(''); }} />
+            ) : (
+              <input className="input" placeholder="Type a name" aria-label="Add someone to the group" value={typing}
+                onChange={(e) => { setTyping(e.target.value); setError(''); }}
+                onKeyDown={(e) => { if (e.key === 'Enter' && typing.trim()) startNew(typing); }} />
+            )}
+            {q && !newbie && (
               <div className="suggest">
                 {suggestions.map((p) => (
                   <button key={p.id} onClick={() => addMember({ name: personName(p), existingId: p.id })}>
@@ -151,14 +184,10 @@ export default function AddFlow({ nav, from }) {
                     <span style={{ color: 'var(--acc)', fontWeight: 600 }}>Add</span>
                   </button>
                 ))}
-                <button onClick={() => addMember({ name: typing.trim(), isChild: child })}>
-                  <span><b>Add “{typing.trim()}”</b><div className="tiny" style={{ color: '#7A6A80' }}>As someone new</div></span>
+                <button onClick={() => startNew(typing)}>
+                  <span><b>Add “{typing.trim()}”</b><div className="tiny" style={{ color: '#7A6A80' }}>Someone new · add their details</div></span>
                   <Plus />
                 </button>
-                <div className="spread" style={{ padding: '10px 14px', fontSize: 13, color: '#6E6078' }}>
-                  <span>A child (shares one tick box)</span>
-                  <Switch checked={child} label="Child" onChange={setChild} />
-                </div>
               </div>
             )}
           </>
@@ -210,3 +239,51 @@ export default function AddFlow({ nav, from }) {
   );
 }
 
+
+// A new group member's details. A full person by default (own tick box,
+// organisation, their own prayer points); or just a name, like a child.
+function NewPersonPanel({ person, onChange, onAdd, onCancel }) {
+  const full = !person.isChild;
+  const addPoint = () => { if (person.draft.trim()) onChange({ points: [...person.points, person.draft.trim()], draft: '' }); };
+  return (
+    <div className="surface cream stack" style={{ padding: 14, gap: 12 }}>
+      <div className="spread">
+        <span style={{ fontWeight: 600 }}>New person</span>
+        <button className="icon-btn" style={{ width: 36, height: 36 }} onClick={onCancel} aria-label="Cancel"><Close size={18} /></button>
+      </div>
+      <div className="seg" aria-label="Kind of person" style={{ background: 'rgba(35,27,51,.07)' }}>
+        <button aria-pressed={full} onClick={() => onChange({ isChild: false })}>Full person</button>
+        <button aria-pressed={!full} onClick={() => onChange({ isChild: true })}>Just a name</button>
+      </div>
+      <span className="tiny sub" style={{ marginTop: -4 }}>
+        {full ? 'Their own tick box, and their own prayer points.' : 'For a child: just their name, sharing one tick box.'}
+      </span>
+      {full ? (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
+            <label className="field">First name<input className="input" autoFocus value={person.firstName} onChange={(e) => onChange({ firstName: e.target.value })} /></label>
+            <label className="field">Last name<input className="input" value={person.lastName} onChange={(e) => onChange({ lastName: e.target.value })} /></label>
+          </div>
+          <label className="field">Church or organisation<input className="input" placeholder="Optional" value={person.organisation} onChange={(e) => onChange({ organisation: e.target.value })} /></label>
+          <span className="field" style={{ marginBottom: -4 }}>Their prayer points</span>
+          {person.points.map((p, i) => (
+            <div key={`${p}${i}`} className="row" style={{ gap: 8 }}>
+              <span className="bullet" style={{ marginTop: 0 }} />
+              <span className="grow">{p}</span>
+              <button className="icon-btn" style={{ width: 32, height: 32, color: 'var(--muted)' }} aria-label={`Remove ${p}`}
+                onClick={() => onChange({ points: person.points.filter((_, j) => j !== i) })}><Close size={14} /></button>
+            </div>
+          ))}
+          <div className="row" style={{ gap: 8 }}>
+            <input className="input" placeholder="Optional" aria-label="Their prayer point" value={person.draft}
+              onChange={(e) => onChange({ draft: e.target.value })} onKeyDown={(e) => { if (e.key === 'Enter') addPoint(); }} />
+            <button className="btn accent" style={{ width: 46, height: 46, padding: 0, borderRadius: 12, flexShrink: 0 }} onClick={addPoint} aria-label="Add their prayer point"><Plus size={18} /></button>
+          </div>
+        </>
+      ) : (
+        <label className="field">Name<input className="input" autoFocus value={person.firstName} onChange={(e) => onChange({ firstName: e.target.value })} /></label>
+      )}
+      <button className="btn accent" onClick={onAdd}>Add to group</button>
+    </div>
+  );
+}
