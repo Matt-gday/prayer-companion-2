@@ -9,8 +9,8 @@ import { Download, Upload, Chevron, Lock } from '../components/Icons.jsx';
 
 export const LOOK_OPTIONS = {
   font: [
-    { value: 'serif', label: 'Serif', style: { fontFamily: "'Newsreader', Georgia, serif", fontSize: 16 } },
     { value: 'sans', label: 'Sans-serif', style: { fontFamily: "'Inter', system-ui, sans-serif" } },
+    { value: 'serif', label: 'Serif', style: { fontFamily: "'Newsreader', Georgia, serif", fontSize: 16 } },
   ],
   size: [
     { value: 's', label: 'A', style: { fontSize: 12 } },

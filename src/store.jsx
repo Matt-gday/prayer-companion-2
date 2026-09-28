@@ -22,7 +22,7 @@ const DEFAULT_SETTINGS = {
   name: '',
   sky: 'time', // 'time' | 'random' | a sky key (see skies.js)
   randomPool: ['twilight', 'ocean', 'rose', 'forest', 'golden', 'aurora'],
-  font: 'serif', // 'serif' | 'sans'
+  font: 'sans', // 'serif' | 'sans'
   size: 'l', // 's' | 'm' | 'l' | 'xl'
   limit: 15,
   onboarded: false,
