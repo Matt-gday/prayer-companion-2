@@ -16,8 +16,8 @@
   --high: #FF6A45; --med: #8F7BFF; --low: #27C79A; --occ: #4AA3F0;
   --dot-ring: rgba(255,255,255,.6); --tick: rgba(255,255,255,.78);
   --ui: 'Inter', system-ui, -apple-system, sans-serif;
-  /* Keep content clear of iOS's soft blur under the status bar. */
-  --top-gap: calc(env(safe-area-inset-top) + 24px);
+  /* Space between the status bar and the top of each screen. */
+  --top-gap: calc(env(safe-area-inset-top) + 10px);
 }
 
 .cream {
@@ -314,7 +314,7 @@ select.input { appearance: none; }
 .size-slider input::-moz-range-thumb { width: 26px; height: 26px; border: 0; border-radius: 13px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
 
 /* Pinned top bar */
-.pinned { position: sticky; top: calc(env(safe-area-inset-top) + 18px); z-index: 5; border-radius: 16px; padding: 0 8px 0 4px; background: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.pinned { position: sticky; top: calc(env(safe-area-inset-top) + 6px); z-index: 5; border-radius: 16px; padding: 0 8px 0 4px; background: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 
 /* Home tiles (three) */
 .home-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
