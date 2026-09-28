@@ -56,7 +56,7 @@ export default function Welcome({ skyKey, now }) {
 
   if (step === 1) {
     return (
-      <div className="screen" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 14px)' }}>
+      <div className="screen" style={{ paddingTop: 'var(--top-gap)' }}>
         {dots}
         <div style={{ flex: 1 }} />
         <img className="app-icon" src="./apple-touch-icon.png" alt="" style={{ alignSelf: 'center' }} />
@@ -74,7 +74,7 @@ export default function Welcome({ skyKey, now }) {
 
   if (step === 2) {
     return (
-      <div className="screen" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 14px)' }}>
+      <div className="screen" style={{ paddingTop: 'var(--top-gap)' }}>
         {dots}
         {backLink}
         <h1 className="big-title" style={{ fontSize: 30 }}>Pick your sky</h1>
@@ -89,7 +89,7 @@ export default function Welcome({ skyKey, now }) {
 
   if (step === 3) {
     return (
-      <div className="screen" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 14px)' }}>
+      <div className="screen" style={{ paddingTop: 'var(--top-gap)' }}>
         {dots}
         {backLink}
         <h1 className="big-title" style={{ fontSize: 30 }}>Make it easy to read</h1>
@@ -105,7 +105,7 @@ export default function Welcome({ skyKey, now }) {
   }
 
   return (
-    <div className="screen" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 14px)' }}>
+    <div className="screen" style={{ paddingTop: 'var(--top-gap)' }}>
       {dots}
       {backLink}
       <h1 className="big-title" style={{ fontSize: 30 }}>Bring your people across</h1>
