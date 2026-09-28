@@ -46,6 +46,8 @@
 /* ---------- Base ---------- */
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; overflow: hidden; }
+/* Pin the page so iPhones can't leave it shifted after a rotation. */
+body { position: fixed; inset: 0; }
 /* Screens scroll here, not the page, so the sky painted on <html> stays put.
    While there's more below, content fades softly into the sky at the bottom
    instead of stopping at a hard edge (see Scroller in App.jsx). */
@@ -94,13 +96,13 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, [contentedita
 
 .screen {
   zoom: var(--z, 1);
-  position: relative; z-index: 1; max-width: 560px; margin: 0 auto; min-height: calc(100dvh / var(--z, 1));
+  position: relative; z-index: 1; max-width: 560px; margin: 0 auto; min-height: calc(var(--app-h, 100dvh) / var(--z, 1));
   padding: var(--top-gap) 16px calc(env(safe-area-inset-bottom) + 8px);
   display: flex; flex-direction: column; gap: 12px;
 }
-.screen.fixed { height: calc(100dvh / var(--z, 1)); overflow: hidden; }
+.screen.fixed { height: calc(var(--app-h, 100dvh) / var(--z, 1)); overflow: hidden; }
 /* Home fits the screen; it only scrolls on very small phones at the largest text size. */
-.screen.home { height: calc(100dvh / var(--z, 1)); min-height: 0; overflow-y: auto; }
+.screen.home { height: calc(var(--app-h, 100dvh) / var(--z, 1)); min-height: 0; overflow-y: auto; }
 @media (max-height: 720px) { .screen.home { gap: 10px !important; } }
 .screen > * { flex-shrink: 0; }
 

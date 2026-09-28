@@ -37,6 +37,24 @@ export const ONBOARDING_BG = 'linear-gradient(180deg, #141E46 0%, #1B3A6B 30%, #
 const setScreenHeight = () => {
   const h = Math.max(window.screen?.height || 0, window.innerHeight, document.documentElement.clientHeight);
   document.documentElement.style.setProperty('--screen-h', `${h}px`);
+  // The visible height, measured directly: after the phone is turned, iPhones
+  // can keep an out-of-date 100dvh until the app is reopened.
+  // (Skipped while typing, so the on-screen keyboard doesn't squash the page.)
+  const typing = document.activeElement?.matches?.('input, textarea, [contenteditable]');
+  if (!typing) document.documentElement.style.setProperty('--app-h', `${window.innerHeight}px`);
+};
+
+// After turning the phone sideways and back, iPhones can leave the whole page
+// nudged up a little, so the sky stops short of the bottom and taps land in
+// the wrong place. Put everything back once the rotation has settled.
+const settleAfterRotate = () => {
+  setScreenHeight();
+  [60, 250, 600, 1200].forEach((ms) => setTimeout(() => {
+    window.scrollTo(0, 0);
+    if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    setScreenHeight();
+  }, ms));
 };
 
 const STARS = [
@@ -78,8 +96,8 @@ function useSky(settings, now, quiet) {
 }
 
 if (typeof window !== 'undefined') {
-  window.addEventListener('resize', setScreenHeight);
-  window.addEventListener('orientationchange', setScreenHeight);
+  window.addEventListener('resize', settleAfterRotate);
+  window.addEventListener('orientationchange', settleAfterRotate);
 }
 
 // The scrolling area. Marks itself "more" while there's content below, which
