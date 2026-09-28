@@ -4,6 +4,7 @@
 import { useEffect, useRef } from 'react';
 import { SKIES, DAY_SKIES, COLOUR_SKIES, skyMode, skyForDay, skyForTime, nextSkyText } from '../skies.js';
 import SkyThumb from './SkyThumb.jsx';
+import HomePreview from './HomePreview.jsx';
 
 const SIZES = ['s', 'm', 'l', 'xl'];
 const STARTS = { morning: '5am', midday: '10am', afternoon: '2pm', sunset: '5pm', dusk: '6:30pm', night: '8pm' };
@@ -23,7 +24,7 @@ function OptionCard({ selected, onClick, title, text, icon, className = '' }) {
 export { OptionCard };
 
 // settings: { sky, randomPool }. onChange(patch) updates them.
-export function SkyChooser({ sky, randomPool, onChange, now, currentKey }) {
+export function SkyChooser({ sky, randomPool, onChange, now, currentKey, previewName }) {
   const mode = skyMode(sky);
   const pool = randomPool && randomPool.length ? randomPool : COLOUR_SKIES;
   const timeKey = skyForTime(now);
@@ -68,7 +69,7 @@ export function SkyChooser({ sky, randomPool, onChange, now, currentKey }) {
 
       {mode === 'choose' && (
         <>
-          <div className="sky-preview"><SkyThumb skyKey={chosen} /></div>
+          <div style={{ alignSelf: 'center' }}><HomePreview skyKey={chosen} name={previewName} width={180} /></div>
           <div className="sky-carousel" ref={carousel}>
             {[...COLOUR_SKIES, ...DAY_SKIES].map((k) => (
               <SkyThumb key={k} skyKey={k} selected={k === chosen} onClick={() => onChange({ sky: k })} />

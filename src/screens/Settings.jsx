@@ -65,7 +65,7 @@ export default function Settings({ nav, focus }) {
 
       <div className="surface stack" style={{ gap: 12 }}>
         <span style={{ fontSize: 16, fontWeight: 600 }}>Home colour</span>
-        <SkyChooser sky={settings.sky} randomPool={settings.randomPool} now={nav.now} currentKey={nav.skyKey}
+        <SkyChooser sky={settings.sky} randomPool={settings.randomPool} now={nav.now} currentKey={nav.skyKey} previewName={settings.name}
           onChange={(patch) => Object.entries(patch).forEach(([k, v]) => setSetting(k, v))} />
       </div>
 

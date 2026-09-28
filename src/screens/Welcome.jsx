@@ -78,7 +78,7 @@ export default function Welcome({ skyKey, now }) {
         {backLink}
         <h1 className="big-title" style={{ fontSize: 30 }}>Pick your sky</h1>
         <p style={{ opacity: 0.85, lineHeight: 1.45, marginTop: -6 }}>The colour behind everything in the app.</p>
-        <SkyChooser sky={settings.sky} randomPool={settings.randomPool} now={now} currentKey={skyKey}
+        <SkyChooser sky={settings.sky} randomPool={settings.randomPool} now={now} currentKey={skyKey} previewName={name.trim()}
           onChange={(patch) => Object.entries(patch).forEach(([k, v]) => setSetting(k, v))} />
         <div style={{ flex: 1 }} />
         {cont()}
