@@ -104,8 +104,8 @@ export default function Home({ nav }) {
           </div>
 
           {counts.length > 0 && (
-            <div className="row" style={{ flexWrap: 'wrap', justifyContent: 'center', gap: 6 }}>
-              {counts.map(([p, n]) => <span key={p} className="pill"><span className={`dot dot-${p}`} />{PRIORITY_LABEL[p]} {n}</span>)}
+            <div className="row" style={{ flexWrap: 'wrap', justifyContent: 'center', gap: 8 }}>
+              {counts.map(([p, n]) => <span key={p} className="pill home-pill"><span className={`dot dot-${p}`} />{PRIORITY_LABEL[p]} {n}</span>)}
             </div>
           )}
 

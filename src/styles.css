@@ -337,3 +337,7 @@ select.input { appearance: none; }
 .preview-carousel { display: flex; gap: 18px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
   margin: 0 -16px; padding: 6px calc(50% - 100px) 14px; }
 .preview-carousel::-webkit-scrollbar { display: none; }
+
+/* Home priority pills: larger, and they grow and shrink with the text size. */
+.home-pill { font-size: calc(var(--point-size) * 0.88); padding: 0.45em 0.95em 0.45em 0.75em; gap: 0.45em; }
+.home-pill .dot { width: 0.7em; height: 0.7em; border-radius: 50%; }
