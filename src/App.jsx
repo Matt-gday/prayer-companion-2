@@ -26,10 +26,18 @@ function useNow() {
   return now;
 }
 
+const ONBOARDING_BOTTOM = '#2FA89B';
+const lastColour = (bg) => (bg.match(/#[0-9A-Fa-f]{6}/g) || []).pop();
+
 function useSky(settings, now) {
   const key = currentSky(settings, now);
   const sky = SKIES[key];
   useEffect(() => {
+    // Behind the colour layer, use the gradient's bottom colour, so any gap at
+    // the bottom of a home-screen app blends in instead of showing a bar.
+    const under = settings.onboarded ? lastColour(sky.bg) : ONBOARDING_BOTTOM;
+    document.documentElement.style.background = under;
+    document.body.style.background = under;
     const root = document.documentElement;
     root.dataset.font = settings.font;
     root.dataset.size = settings.size;
@@ -37,9 +45,8 @@ function useSky(settings, now) {
     root.style.setProperty('--acc', sky.go);
     root.style.setProperty('--ring', sky.ring);
     root.style.setProperty('--glass', sky.glass || DEFAULT_GLASS);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', sky.top);
-    document.body.style.background = sky.top;
-  }, [key, sky, settings.font, settings.size]);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', settings.onboarded ? sky.top : '#141E46');
+  }, [key, sky, settings.font, settings.size, settings.onboarded]);
   return key;
 }
 
