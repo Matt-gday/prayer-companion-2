@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useStore } from './store.jsx';
 import { SKIES, DEFAULT_GLASS, currentSky } from './skies.js';
 import { scrollToTop } from './scroll.js';
@@ -91,6 +91,25 @@ if (typeof window !== 'undefined') {
   window.addEventListener('orientationchange', setScreenHeight);
 }
 
+// The scrolling area. Marks itself "more" while there's content below, which
+// fades the bottom edge; at the end, or when everything fits, it's crisp.
+function Scroller({ className = '', children }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const update = () => el.classList.toggle('more', el.scrollHeight - el.clientHeight - el.scrollTop > 4);
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    const mo = new MutationObserver(update);
+    mo.observe(el, { childList: true, subtree: true, characterData: true });
+    return () => { el.removeEventListener('scroll', update); ro.disconnect(); mo.disconnect(); };
+  }, []);
+  return <div ref={ref} className={`scroller ${className}`}>{children}</div>;
+}
+
 // Only the sunrise rays live in their own layer.
 export function SkyBackground({ skyKey, quiet }) {
   if (!SKIES[skyKey].sun) return null;
@@ -109,7 +128,7 @@ export default function App() {
   const go = (name, params = {}) => { setScreen({ name, ...params }); scrollToTop(); };
 
   if (!settings.onboarded) {
-    return <div className="onb"><Welcome skyKey={skyKey} now={now} /></div>;
+    return <Scroller className="onb"><Welcome skyKey={skyKey} now={now} /></Scroller>;
   }
 
   const nav = { go, edit: setEditing, add: () => go('add', { from: screen.name }), current: screen.name, from: screen.from, skyKey, now };
@@ -130,7 +149,7 @@ export default function App() {
   return (
     <>
       <SkyBackground skyKey={skyKey} quiet={screen.name !== 'home'} />
-      {content}
+      <Scroller>{content}</Scroller>
       {editing && <EditCard cardId={editing} nav={nav} onClose={() => setEditing(null)} />}
       {toast && (
         <div className="toast" role="status" key={toast.id}>

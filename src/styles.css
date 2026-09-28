@@ -50,8 +50,13 @@
 /* ---------- Base ---------- */
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; overflow: hidden; }
-/* The app scrolls here, not the page, so the sky painted on <html> stays put. */
-#root { position: fixed; inset: 0; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+/* Screens scroll here, not the page, so the sky painted on <html> stays put.
+   While there's more below, content fades softly into the sky at the bottom
+   instead of stopping at a hard edge (see Scroller in App.jsx). */
+.scroller { position: fixed; inset: 0; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.scroller.more {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 44px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 44px), transparent); }
 body { background: transparent; color: var(--text); font-family: var(--ui); font-size: 15px; -webkit-font-smoothing: antialiased; overscroll-behavior: none; }
 button, input, textarea, select { font: inherit; color: inherit; }
 button { background: none; border: 0; cursor: pointer; }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { PRIORITIES, PRIORITY_LABEL } from '../model.js';
 import { Back, Check, Users, Building } from './Icons.jsx';
 
@@ -69,18 +70,20 @@ export function Sheet({ onClose, children, label }) {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
   }, []);
-  return (
+  // Drawn above the scrolling screens so the bottom fade never touches it.
+  return createPortal(
     <div className="overlay" onClick={onClose}>
       <div className="sheet" role="dialog" aria-modal="true" aria-label={label} onClick={(e) => e.stopPropagation()}>
         <div className="handle" />
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
 export function Confirm({ title, message, confirmLabel, danger, onConfirm, onCancel, extra }) {
-  return (
+  return createPortal(
     <div className="overlay center" onClick={onCancel}>
       <div className="dialog" role="alertdialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
         <div style={{ fontSize: 18, fontWeight: 600 }}>{title}</div>
@@ -92,7 +95,8 @@ export function Confirm({ title, message, confirmLabel, danger, onConfirm, onCan
             onClick={onConfirm}>{confirmLabel}</button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
