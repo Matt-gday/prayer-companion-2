@@ -26,18 +26,31 @@ function useNow() {
   return now;
 }
 
-const ONBOARDING_BOTTOM = '#2FA89B';
+export const ONBOARDING_BG = 'linear-gradient(180deg, #141E46 0%, #1B3A6B 30%, #1F6F8B 62%, #23918F 84%, #2FA89B 100%)';
 const lastColour = (bg) => (bg.match(/#[0-9A-Fa-f]{6}/g) || []).pop();
+
+// Home-screen apps on iPhone lay the page out a status bar's height shorter
+// than the screen, so a background drawn on the page stops short. The page's
+// back layer (the <html> background) is painted edge to edge, so the sky is
+// painted there too, sized to the full screen height, with the sky layer
+// matching it exactly.
+const setScreenHeight = () => {
+  const h = Math.max(window.screen?.height || 0, window.innerHeight, document.documentElement.clientHeight);
+  document.documentElement.style.setProperty('--screen-h', `${h}px`);
+};
 
 function useSky(settings, now) {
   const key = currentSky(settings, now);
   const sky = SKIES[key];
   useEffect(() => {
-    // Behind the colour layer, use the gradient's bottom colour, so any gap at
-    // the bottom of a home-screen app blends in instead of showing a bar.
-    const under = settings.onboarded ? lastColour(sky.bg) : ONBOARDING_BOTTOM;
-    document.documentElement.style.background = under;
-    document.body.style.background = under;
+    const bg = settings.onboarded ? sky.bg : ONBOARDING_BG;
+    const html = document.documentElement;
+    setScreenHeight();
+    html.style.backgroundColor = lastColour(bg);
+    html.style.backgroundImage = bg;
+    html.style.backgroundSize = '100% var(--screen-h)';
+    html.style.backgroundRepeat = 'no-repeat';
+    document.body.style.background = 'transparent';
     const root = document.documentElement;
     root.dataset.font = settings.font;
     root.dataset.size = settings.size;
@@ -48,6 +61,11 @@ function useSky(settings, now) {
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', settings.onboarded ? sky.top : '#141E46');
   }, [key, sky, settings.font, settings.size, settings.onboarded]);
   return key;
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('resize', setScreenHeight);
+  window.addEventListener('orientationchange', setScreenHeight);
 }
 
 export function SkyBackground({ skyKey, quiet }) {

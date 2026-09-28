@@ -49,7 +49,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body, #root { min-height: 100%; }
 html, body { overflow-x: clip; }
-body { background: #27336E; color: var(--text); font-family: var(--ui); font-size: 15px; -webkit-font-smoothing: antialiased; overscroll-behavior: none; }
+body { background: transparent; color: var(--text); font-family: var(--ui); font-size: 15px; -webkit-font-smoothing: antialiased; overscroll-behavior: none; }
 button, input, textarea, select { font: inherit; color: inherit; }
 button { background: none; border: 0; cursor: pointer; }
 button:disabled { cursor: default; }
@@ -59,7 +59,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); }
 :focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 
 /* The sky behind everything. */
-.sky-bg { position: fixed; top: 0; left: 0; right: 0; bottom: calc(-1 * env(safe-area-inset-bottom, 0px) - 40px); z-index: 0; pointer-events: none; overflow: hidden; }
+.sky-bg { position: fixed; top: 0; left: 0; right: 0; height: var(--screen-h, 100lvh); z-index: 0; pointer-events: none; overflow: hidden; }
 .sky-bg > div { position: absolute; inset: 0; }
 .sky-stars {
   opacity: .72;
@@ -263,7 +263,7 @@ select.input { appearance: none; }
 .chip-btn.answered { background: var(--low); color: #fff; }
 
 /* ---------- Welcome steps ---------- */
-.onb-bg { position: fixed; top: 0; left: 0; right: 0; bottom: calc(-1 * env(safe-area-inset-bottom, 0px) - 40px); z-index: 0; background: linear-gradient(180deg, #141E46 0%, #1B3A6B 30%, #1F6F8B 62%, #23918F 84%, #2FA89B 100%); }
+.onb-bg { position: fixed; top: 0; left: 0; right: 0; height: var(--screen-h, 100lvh); z-index: 0; background: linear-gradient(180deg, #141E46 0%, #1B3A6B 30%, #1F6F8B 62%, #23918F 84%, #2FA89B 100%); }
 .onb { --acc: #2FA89B; --glass: rgba(10,20,40,.28); --panel: rgba(10,20,40,.28); }
 .onb .screen { gap: 14px; }
 .step-dots { display: flex; gap: 6px; justify-content: center; padding-top: 6px; }
