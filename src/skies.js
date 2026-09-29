@@ -62,6 +62,14 @@ export const SKIES = {
   },
 };
 
+// Every sky starts from the same deep navy right behind the clock, fading
+// into its own colours just below. iPhones can hold on to an old colour
+// behind the clock, so keeping it the same for every sky means it never
+// looks wrong.
+export const EDGE = '#141E46';
+export const edgeFade = (inset = 'env(safe-area-inset-top)', fade = '60px') =>
+  `linear-gradient(180deg, ${EDGE} ${inset}, rgba(20,30,70,0) calc(${inset} + ${fade}))`;
+
 export const DAY_SKIES = ['morning', 'midday', 'afternoon', 'sunset', 'dusk', 'night'];
 export const COLOUR_SKIES = ['twilight', 'ocean', 'rose', 'forest', 'golden', 'aurora'];
 export const DEFAULT_GLASS = 'rgba(40,24,50,.28)';
