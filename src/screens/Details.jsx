@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '../store.jsx';
-import { cardMembers, personName, cardName, isPrayable } from '../model.js';
+import { cardMembers, personName, cardName, cardKind, isPrayable } from '../model.js';
 import { estimateIntervals, describeInterval, everyDayCheck } from '../scheduler.js';
-import { TopBar, PriorityPicker, Switch, useConfirm } from '../components/ui.jsx';
+import { TopBar, PageHeading, PriorityPicker, Switch, useConfirm } from '../components/ui.jsx';
 import { Chevron, Plus, Close } from '../components/Icons.jsx';
 
 // Where "back" goes from the Details and Prayer points pages: the person's
@@ -59,7 +59,8 @@ export default function Details({ nav, cardId, from, cardFrom }) {
 
   return (
     <div className="screen">
-      <TopBar onBack={back} backLabel={backLabel} right={<span className="small" style={{ fontWeight: 600, marginRight: 4 }}>Details</span>} />
+      <TopBar onBack={back} backLabel={backLabel} />
+      <PageHeading kicker="Details for" name={name} italic={cardKind(card, people) === 'org'} />
 
       <div className="surface cream stack">
         {solo && person ? (

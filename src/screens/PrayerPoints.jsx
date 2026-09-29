@@ -1,6 +1,6 @@
 import { useStore } from '../store.jsx';
-import { cardMembers, cardName, personName, formatShortDate, formatMonthYear, everPrayed } from '../model.js';
-import { TopBar } from '../components/ui.jsx';
+import { cardMembers, cardName, cardKind, personName, formatShortDate, formatMonthYear, everPrayed } from '../model.js';
+import { TopBar, PageHeading } from '../components/ui.jsx';
 import PointEditor from '../components/PointEditor.jsx';
 import { Check } from '../components/Icons.jsx';
 import { backFrom } from './Details.jsx';
@@ -53,7 +53,8 @@ export default function PrayerPoints({ nav, cardId, from, cardFrom }) {
 
   return (
     <div className="screen">
-      <TopBar onBack={back} backLabel={backLabel} right={<span className="small" style={{ fontWeight: 600, marginRight: 4 }}>Prayer points</span>} />
+      <TopBar onBack={back} backLabel={backLabel} />
+      <PageHeading kicker="Prayer points for" name={name} italic={cardKind(card, people) === 'org'} />
 
       {sections.map((s) => (
         <div key={s.key} className="surface cream">

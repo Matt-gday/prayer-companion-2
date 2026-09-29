@@ -12,6 +12,16 @@ export function TopBar({ onBack, backLabel = 'Back', right }) {
   );
 }
 
+// A page's big heading: "Prayer points for" with whose they are underneath.
+export function PageHeading({ kicker, name, italic }) {
+  return (
+    <div className="stack" style={{ gap: 2, padding: '0 4px' }}>
+      <span className="small" style={{ opacity: 0.9 }}>{kicker}</span>
+      <h1 className={`title ${italic ? 'italic' : ''}`} style={{ lineHeight: 1.05 }}>{name}</h1>
+    </div>
+  );
+}
+
 export function Segmented({ options, value, onChange, onPage = false, label }) {
   return (
     <div className={`seg ${onPage ? 'on-page' : 'on-card'}`} role="group" aria-label={label}>
