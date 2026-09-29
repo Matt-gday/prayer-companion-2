@@ -75,23 +75,19 @@ const bottomColour = (bg) => (bg.match(/#[0-9A-Fa-f]{6}/g) || ['#141E46']).pop()
 function useSky(settings, now, quiet) {
   const key = currentSky(settings, now);
   const sky = SKIES[key];
+  const layers = settings.onboarded
+    ? [...(sky.stars ? STARS : []), ...(sky.sun ? [sunGlow(quiet)] : []), sky.bg]
+    : [ONBOARDING_BG];
+  const top = settings.onboarded ? sky.top : '#141E46';
+  const bottom = bottomColour(settings.onboarded ? sky.bg : ONBOARDING_BG);
   useLayoutEffect(() => {
     const html = document.documentElement;
     setScreenHeight();
-    let layers = [ONBOARDING_BG];
-    if (settings.onboarded) {
-      layers = [sky.bg];
-      if (sky.sun) layers.unshift(sunGlow(quiet));
-      if (sky.stars) layers.unshift(...STARS);
-    }
     // The iPhone fills the area behind the clock from the page's plain
-    // background colour, so that's the sky's top colour. The two edge strips
-    // (see index.html) tint the top and bottom edges separately, so the
-    // bottom edge gets the sky's bottom colour rather than the top one.
-    const top = settings.onboarded ? sky.top : '#141E46';
+    // background colour, so that's the sky's top colour. The sky itself is
+    // also painted on its own layer (SkyPaint), with strips along the top
+    // and bottom edges in the sky's top and bottom colours.
     html.style.backgroundColor = top;
-    html.style.setProperty('--sky-top', top);
-    html.style.setProperty('--sky-bottom', bottomColour(settings.onboarded ? sky.bg : ONBOARDING_BG));
     html.style.backgroundImage = layers.join(', ');
     html.style.backgroundSize = '100% var(--screen-h)';
     html.style.backgroundRepeat = 'no-repeat';
@@ -113,8 +109,23 @@ function useSky(settings, now, quiet) {
       meta.content = colour;
       if (old) old.replaceWith(meta); else document.head.appendChild(meta);
     }
-  }, [key, sky, settings.font, settings.size, settings.onboarded, quiet]);
-  return key;
+  }, [key, sky, settings.font, settings.size, settings.onboarded, quiet]); // eslint-disable-line react-hooks/exhaustive-deps
+  return { key, layers, top, bottom };
+}
+
+// The sky, painted on fresh layers that are replaced whenever it changes.
+// An iPhone can hold on to an old colour behind the clock after moving
+// between screens; brand-new layers are always drawn afresh.
+function SkyPaint({ paint }) {
+  const id = paint.layers.join('|');
+  return (
+    <>
+      <div key={`sky-${id}`} className="sky-paint" aria-hidden="true"
+        style={{ backgroundImage: paint.layers.join(', '), backgroundColor: paint.bottom }} />
+      <div key={`top-${paint.top}`} className="edge-tint edge-top" style={{ background: paint.top }} aria-hidden="true" />
+      <div key={`bottom-${paint.bottom}`} className="edge-tint edge-bottom" style={{ background: `linear-gradient(to bottom, transparent, ${paint.bottom})` }} aria-hidden="true" />
+    </>
+  );
 }
 
 if (typeof window !== 'undefined') {
@@ -155,12 +166,13 @@ export default function App() {
   const { settings, toast, dismissToast } = store;
   const now = useNow();
   const [screen, setScreen] = useState({ name: 'home' });
-  const skyKey = useSky(settings, now, screen.name !== 'home');
+  const paint = useSky(settings, now, screen.name !== 'home');
+  const skyKey = paint.key;
 
   const go = (name, params = {}) => { setScreen({ name, ...params }); scrollToTop(); };
 
   if (!settings.onboarded) {
-    return <Scroller className="onb"><Welcome skyKey={skyKey} now={now} /></Scroller>;
+    return <><SkyPaint paint={paint} /><Scroller className="onb"><Welcome skyKey={skyKey} now={now} /></Scroller></>;
   }
 
   // Details and Prayer points pages remember where to come back to.
@@ -187,6 +199,7 @@ export default function App() {
 
   return (
     <>
+      <SkyPaint paint={paint} />
       <SkyBackground skyKey={skyKey} quiet={screen.name !== 'home'} />
       {screen.name === 'home' && settings.sparkles !== false && <Sparkles />}
       <Scroller>{content}</Scroller>
