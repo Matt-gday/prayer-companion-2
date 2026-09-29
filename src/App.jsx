@@ -84,10 +84,14 @@ function useSky(settings, now, quiet) {
       if (sky.sun) layers.unshift(sunGlow(quiet));
       if (sky.stars) layers.unshift(...STARS);
     }
-    // The sky is drawn right up behind the clock (the status bar is see-
-    // through), so it changes live. Anything below the painted sky, if the
-    // page is ever taller, gets the sky's bottom colour so there's no bar.
-    html.style.backgroundColor = bottomColour(settings.onboarded ? sky.bg : ONBOARDING_BG);
+    // The iPhone fills the area behind the clock from the page's plain
+    // background colour, so that's the sky's top colour. The two edge strips
+    // (see index.html) tint the top and bottom edges separately, so the
+    // bottom edge gets the sky's bottom colour rather than the top one.
+    const top = settings.onboarded ? sky.top : '#141E46';
+    html.style.backgroundColor = top;
+    html.style.setProperty('--sky-top', top);
+    html.style.setProperty('--sky-bottom', bottomColour(settings.onboarded ? sky.bg : ONBOARDING_BG));
     html.style.backgroundImage = layers.join(', ');
     html.style.backgroundSize = '100% var(--screen-h)';
     html.style.backgroundRepeat = 'no-repeat';
