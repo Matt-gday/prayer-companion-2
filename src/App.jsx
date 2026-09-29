@@ -68,24 +68,9 @@ const sunGlow = (quiet) => (quiet
   ? 'radial-gradient(circle 240px at 50% calc(114% - 170px), rgba(255,253,240,.5) 0%, rgba(255,241,190,.5) 14%, rgba(255,217,138,.45) 24%, rgba(255,196,110,.28) 38%, rgba(255,170,110,.09) 55%, rgba(255,170,110,0) 70%)'
   : 'radial-gradient(circle 240px at 50% calc(96% - 170px), #FFFDF0 0%, #FFF1BE 14%, #FFD98A 24%, rgba(255,196,110,.55) 38%, rgba(255,170,110,.18) 55%, rgba(255,170,110,0) 70%)');
 
-// An iPhone home-screen app only reads the colour behind the clock when it
-// opens. If the sky's top colour has changed since then, the app reloads
-// quietly at a calm moment (leaving Settings, finishing the welcome, or
-// coming back to Home) so the top blends again.
-let launchColour = null;
-let currentColour = null;
-const topIsStale = () => !!launchColour && currentColour !== launchColour;
-const reloadTo = (screen) => {
-  try { sessionStorage.setItem('pc2_after_reload', JSON.stringify(screen)); } catch { /* ignore */ }
-  location.reload();
-};
-const screenAfterReload = () => {
-  try {
-    const saved = JSON.parse(sessionStorage.getItem('pc2_after_reload') || 'null');
-    sessionStorage.removeItem('pc2_after_reload');
-    return saved && saved.name ? saved : null;
-  } catch { return null; }
-};
+// The last colour in a gradient: what shows below it if the page is ever
+// taller than the painted sky.
+const bottomColour = (bg) => (bg.match(/#[0-9A-Fa-f]{6}/g) || ['#141E46']).pop();
 
 function useSky(settings, now, quiet) {
   const key = currentSky(settings, now);
@@ -99,9 +84,10 @@ function useSky(settings, now, quiet) {
       if (sky.sun) layers.unshift(sunGlow(quiet));
       if (sky.stars) layers.unshift(...STARS);
     }
-    // The iPhone fills the area behind the clock with the page's plain
-    // background colour, so use the sky's top colour to blend with it.
-    html.style.backgroundColor = settings.onboarded ? sky.top : '#141E46';
+    // The sky is drawn right up behind the clock (the status bar is see-
+    // through), so it changes live. Anything below the painted sky, if the
+    // page is ever taller, gets the sky's bottom colour so there's no bar.
+    html.style.backgroundColor = bottomColour(settings.onboarded ? sky.bg : ONBOARDING_BG);
     html.style.backgroundImage = layers.join(', ');
     html.style.backgroundSize = '100% var(--screen-h)';
     html.style.backgroundRepeat = 'no-repeat';
@@ -116,8 +102,6 @@ function useSky(settings, now, quiet) {
     // iPhones only notice a new status-bar colour when the tag itself is
     // replaced, not just changed, so swap in a fresh one.
     const colour = settings.onboarded ? sky.top : '#141E46';
-    if (!launchColour) launchColour = colour;
-    currentColour = colour;
     const old = document.querySelector('meta[name="theme-color"]');
     if (!old || old.getAttribute('content') !== colour) {
       const meta = document.createElement('meta');
@@ -166,30 +150,10 @@ export default function App() {
   const store = useStore();
   const { settings, toast, dismissToast } = store;
   const now = useNow();
-  const [screen, setScreen] = useState(() => screenAfterReload() || { name: 'home' });
+  const [screen, setScreen] = useState({ name: 'home' });
   const skyKey = useSky(settings, now, screen.name !== 'home');
 
-  const go = (name, params = {}) => {
-    if (screen.name === 'settings' && name !== 'settings' && name !== 'help' && topIsStale()) { reloadTo({ name, ...params }); return; }
-    setScreen({ name, ...params });
-    scrollToTop();
-  };
-
-  // Finishing the welcome changes the top colour from the welcome's navy.
-  useEffect(() => {
-    if (settings.onboarded && topIsStale()) reloadTo({ name: 'home' });
-  }, [settings.onboarded]);
-
-  // The time-of-day sky may have moved on while the app was in the background.
-  useEffect(() => {
-    const onVisible = () => {
-      if (document.visibilityState === 'visible' && screen.name === 'home') {
-        setTimeout(() => { if (topIsStale()) reloadTo({ name: 'home' }); }, 300);
-      }
-    };
-    document.addEventListener('visibilitychange', onVisible);
-    return () => document.removeEventListener('visibilitychange', onVisible);
-  }, [screen.name]);
+  const go = (name, params = {}) => { setScreen({ name, ...params }); scrollToTop(); };
 
   if (!settings.onboarded) {
     return <Scroller className="onb"><Welcome skyKey={skyKey} now={now} /></Scroller>;
