@@ -11,6 +11,7 @@ export const Back = (p) => <Svg size={18} {...p}><path d="M19 12H5M11 18l-6-6 6-
 export const Next = (p) => <Svg {...p}><path d="M5 12h14M13 6l6 6-6 6" /></Svg>;
 export const Prev = (p) => <Svg {...p}><path d="M19 12H5M11 6l-6 6 6 6" /></Svg>;
 export const Check = (p) => <Svg sw={2.4} {...p}><path d="M5 12.5l4.5 4.5L19 7.5" /></Svg>;
+export const ListCheck = (p) => <Svg size={18} sw={1.9} {...p}><path d="M11 6h9M11 12h9M11 18h9M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5L7.5 11M3.5 18l1.5 1.5L7.5 17" /></Svg>;
 export const Pencil = (p) => <Svg size={18} sw={1.8} {...p}><path d="M4 20h4L19 9a2.1 2.1 0 00-3-3L5 17v3zM14 7l3 3" /></Svg>;
 export const Plus = (p) => <Svg size={16} sw={2.2} {...p}><path d="M12 5v14M5 12h14" /></Svg>;
 export const Clock = (p) => <Svg size={14} {...p}><circle cx="12" cy="12" r="9" /><path d="M12 7.5V12l3 2" /></Svg>;

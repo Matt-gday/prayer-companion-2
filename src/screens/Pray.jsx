@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../store.jsx';
 import {
-  cardMembers, cardName, cardKind, tickKeys, groupedNames, activePoints, personName, agoText,
+  cardMembers, cardName, cardKind, tickKeys, groupedNames, activePoints, personName, agoText, pointPrayedDates, deletePointMessage,
   formatLongDate, PRIORITIES, PRIORITY_LABEL, isPrayable, isOrg,
 } from '../model.js';
 import { isCardDone } from '../scheduler.js';
-import { Tick, PriorityPill } from '../components/ui.jsx';
+import { Tick, PriorityPill, useConfirm } from '../components/ui.jsx';
 import AddPointInline from '../components/AddPointInline.jsx';
-import { Back, Next, Prev, List, Cards, Pencil, Check, Clock, Chevron } from '../components/Icons.jsx';
+import { Back, Next, Prev, List, Cards, Pencil, Check, Clock, ListCheck, Trash } from '../components/Icons.jsx';
 
 function ViewToggle({ view, onChange }) {
   return (
@@ -176,7 +176,11 @@ export default function Pray({ nav }) {
 }
 
 function PrayerCard({ card, onEdit, onManage }) {
-  const { people, session, date, toggleTick } = useStore();
+  const { people, cards, session, date, toggleTick, answerPoint, removePoint, setPointText } = useStore();
+  const [ask, confirmNode] = useConfirm();
+  const [openPoint, setOpenPoint] = useState(null); // point showing its quick actions
+  const [editText, setEditText] = useState(null); // words being edited, or null
+  const openRef = useRef(null);
   const members = cardMembers(card, people);
   const keys = tickKeys(card, people);
   const ticks = session.ticks[card.id] || {};
@@ -189,12 +193,41 @@ function PrayerCard({ card, onEdit, onManage }) {
   const mainPoints = solo && person ? activePoints(person.points) : activePoints(card.points);
   const org = solo && person && !isOrg(person) ? person.organisation : '';
 
+  // Tapping anywhere outside the open point closes its actions.
+  useEffect(() => {
+    if (!openPoint) return undefined;
+    const close = (e) => { if (!openRef.current?.contains(e.target)) { setOpenPoint(null); setEditText(null); } };
+    document.addEventListener('pointerdown', close);
+    return () => document.removeEventListener('pointerdown', close);
+  }, [openPoint]);
+
+  const toggle = (id) => { setEditText(null); setOpenPoint(openPoint === id ? null : id); };
+  const confirmDelete = (pt) => {
+    setOpenPoint(null);
+    ask({
+      title: 'Delete this prayer point?',
+      message: deletePointMessage(pt, pointPrayedDates(pointTarget, people, cards)),
+      confirmLabel: 'Delete',
+      danger: true,
+      onConfirm: () => removePoint(pointTarget, pt),
+    });
+  };
+  const saveEdit = (pt) => {
+    const t = (editText || '').trim();
+    if (t && t !== pt.text) setPointText(pointTarget, pt.id, t);
+    setEditText(null);
+    setOpenPoint(null);
+  };
+
   return (
     <>
       <div className="pray-head">
         <div className="spread">
           <PriorityPill priority={card.priority} everyDay={card.priority === 'high' && card.everyDay} />
-          <button className="icon-btn" style={{ background: 'rgba(255,255,255,.18)', width: 40, height: 40, margin: '-4px -4px -4px 0' }} onClick={onEdit} aria-label="Edit card"><Pencil /></button>
+          <span className="row" style={{ gap: 6, margin: '-4px -4px -4px 0' }}>
+            {onManage && <button className="icon-btn" style={{ background: 'rgba(255,255,255,.18)', width: 40, height: 40 }} onClick={onManage} aria-label="Prayer points"><ListCheck /></button>}
+            <button className="icon-btn" style={{ background: 'rgba(255,255,255,.18)', width: 40, height: 40 }} onClick={onEdit} aria-label="Edit details"><Pencil /></button>
+          </span>
         </div>
         <h2 className={`pray-name ${cardKind(card, people) === 'org' ? 'italic' : ''}`}>{cardName(card, people)}</h2>
         <div className="pray-meta">
@@ -228,21 +261,44 @@ function PrayerCard({ card, onEdit, onManage }) {
 
         {mainPoints.length > 0 && (
           <div className="stack" style={{ gap: 10, marginTop: showMembers ? 4 : 0 }}>
-            {mainPoints.map((pt) => (
-              <div key={pt.id} className="point">
+            {mainPoints.map((pt) => (openPoint === pt.id ? (
+              <div key={pt.id} ref={openRef} className="point-open">
+                {editText != null ? (
+                  <input className="input" autoFocus value={editText} aria-label="Edit prayer point"
+                    onChange={(e) => setEditText(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') saveEdit(pt); if (e.key === 'Escape') setEditText(null); }} />
+                ) : (
+                  <button className="point" style={{ textAlign: 'left', width: '100%' }} onClick={() => toggle(pt.id)} aria-expanded="true">
+                    <span className="bullet" />
+                    <span className="point-text">{pt.text}</span>
+                  </button>
+                )}
+                <div className="quick-actions">
+                  {editText != null ? (
+                    <>
+                      <button className="qa qa-go" onClick={() => saveEdit(pt)}><Check size={14} />Save</button>
+                      <button className="qa" onClick={() => setEditText(null)}>Cancel</button>
+                    </>
+                  ) : (
+                    <>
+                      <button className="qa qa-go" onClick={() => { setOpenPoint(null); answerPoint(pointTarget, pt); }}><Check size={14} />Answered</button>
+                      <button className="qa" onClick={() => setEditText(pt.text)}><Pencil size={14} />Edit</button>
+                      <button className="qa danger" onClick={() => confirmDelete(pt)}><Trash size={14} />Delete</button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <button key={pt.id} className="point" style={{ textAlign: 'left', width: '100%' }} onClick={() => toggle(pt.id)} aria-expanded="false">
                 <span className="bullet" />
                 <span className="point-text">{pt.text}</span>
-              </div>
-            ))}
+              </button>
+            )))}
           </div>
         )}
 
         <AddPointInline key={card.id} target={pointTarget} />
-        {onManage && (
-          <button className="link" style={{ alignSelf: 'flex-start', fontSize: 14, color: 'var(--sub)', marginTop: -4 }} onClick={onManage}>
-            Manage prayer points<Chevron size={14} />
-          </button>
-        )}
+        {confirmNode}
       </div>
     </>
   );

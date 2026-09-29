@@ -61,6 +61,18 @@ export const agoText = (iso, now = today()) => {
 // while the point was active.
 export const everPrayed = (pt, dates) => (dates || []).some((d) => d >= pt.added && d <= (pt.closed || '9999-12-31'));
 
+// Days a point's owner was prayed for: a group card's own days, or a person's
+// days plus those of any card they're on.
+export const pointPrayedDates = (target, people, cards) => (target.kind === 'card'
+  ? cards.find((c) => c.id === target.id)?.prayed || []
+  : [...(people.find((p) => p.id === target.id)?.prayed || []),
+    ...cards.filter((c) => c.personIds.includes(target.id)).flatMap((c) => c.prayed || [])]);
+
+// The "are you sure?" wording for deleting a point.
+export const deletePointMessage = (pt, dates) => (everPrayed({ ...pt, closed: today() }, dates)
+  ? 'It’s been prayed for, so it will stay in their history as a past prayer point.'
+  : 'It hasn’t been prayed for yet, so it will be removed completely.');
+
 export const newPoint = (text, date = today()) => ({ id: newId(), text: text.trim(), added: date, status: 'active', closed: null });
 
 export const splitLines = (text) => (text || '').split('\n').map((l) => l.trim()).filter(Boolean);

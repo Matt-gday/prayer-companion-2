@@ -1,13 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../store.jsx';
-import { activePoints } from '../model.js';
-import { AutoText } from './ui.jsx';
+import { activePoints, pointPrayedDates, deletePointMessage } from '../model.js';
+import { AutoText, useConfirm } from './ui.jsx';
 import { Grip, Check, Trash, Plus } from './Icons.jsx';
 
 // Edit a list of prayer points: change the words, drag to reorder,
 // mark answered, delete (kept in history), or add new ones.
 export default function PointEditor({ target, points, placeholder = 'Add a prayer point', label }) {
-  const { addPoint, setPointText, movePoint, answerPoint, removePoint } = useStore();
+  const { people, cards, addPoint, setPointText, movePoint, answerPoint, removePoint } = useStore();
+  const [ask, confirmNode] = useConfirm();
+  const confirmDelete = (pt) => ask({
+    title: 'Delete this prayer point?',
+    message: deletePointMessage(pt, pointPrayedDates(target, people, cards)),
+    confirmLabel: 'Delete',
+    danger: true,
+    onConfirm: () => removePoint(target, pt),
+  });
   const active = activePoints(points);
   const [draft, setDraft] = useState('');
   const [drag, setDrag] = useState(null); // { id, from, dy, rowH }
@@ -51,7 +59,7 @@ export default function PointEditor({ target, points, placeholder = 'Add a praye
           <button className="chip-btn" onClick={() => answerPoint(target, pt)} aria-label={`Mark "${pt.text}" as answered`}>
             <Check size={14} />Answered
           </button>
-          <button className="icon-btn" style={{ width: 38, height: 38 }} onClick={() => removePoint(target, pt)} aria-label={`Delete "${pt.text}"`}>
+          <button className="icon-btn" style={{ width: 38, height: 38 }} onClick={() => confirmDelete(pt)} aria-label={`Delete "${pt.text}"`}>
             <Trash />
           </button>
         </div>
@@ -63,6 +71,7 @@ export default function PointEditor({ target, points, placeholder = 'Add a praye
           <Plus size={18} />
         </button>
       </div>
+      {confirmNode}
     </div>
   );
 }
