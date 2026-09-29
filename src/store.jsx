@@ -51,6 +51,18 @@ const save = (key, value) => {
   }
 };
 
+// Deleted prayer points that were never prayed for are removed for good,
+// wherever data comes from (this device, demo mode or a backup).
+const tidy = (d) => {
+  const cardDates = (ids) => d.cards.filter((c) => c.personIds.some((id) => ids.includes(id))).flatMap((c) => c.prayed || []);
+  const keep = (dates) => (pts) => (pts || []).filter((pt) => pt.status !== 'removed' || everPrayed(pt, dates));
+  return {
+    ...d,
+    people: d.people.map((p) => ({ ...p, points: keep([...(p.prayed || []), ...cardDates([p.id])])(p.points) })),
+    cards: d.cards.map((c) => ({ ...c, points: keep(c.prayed)(c.points) })),
+  };
+};
+
 const StoreContext = createContext(null);
 export const useStore = () => useContext(StoreContext);
 
@@ -63,7 +75,7 @@ export function StoreProvider({ children }) {
   const dataKey = demo ? KEYS.demoData : KEYS.data;
   const sessionKey = demo ? KEYS.demoSession : KEYS.session;
 
-  const [data, replaceData] = useState(() => load(dataKey, demo ? makeDemoData(today()) : EMPTY));
+  const [data, replaceData] = useState(() => tidy(load(dataKey, demo ? makeDemoData(today()) : EMPTY)));
   // Updates merge into the data, so changing people and cards never drops
   // prayer lists (and the other way round).
   const setData = useCallback((fn) => replaceData((d) => ({ ...d, ...(typeof fn === 'function' ? fn(d) : fn) })), []);
@@ -91,7 +103,7 @@ export function StoreProvider({ children }) {
 
   // Demo mode uses its own sample data; your real data is left untouched.
   const setDemo = useCallback((on) => {
-    replaceData(load(on ? KEYS.demoData : KEYS.data, on ? makeDemoData(today()) : EMPTY));
+    replaceData(tidy(load(on ? KEYS.demoData : KEYS.data, on ? makeDemoData(today()) : EMPTY)));
     setSession(load(on ? KEYS.demoSession : KEYS.session, null));
     setSettings((s) => ({ ...s, demo: on }));
   }, []);
@@ -476,7 +488,7 @@ export function StoreProvider({ children }) {
     save(KEYS.data, { people: restored.people, cards: restored.cards, lists: restored.lists || [] });
     save(KEYS.session, null);
     setSettings((s) => ({ ...s, demo: false, name: s.name || restored.userName || '' }));
-    replaceData({ people: restored.people, cards: restored.cards, lists: restored.lists || [] });
+    replaceData(tidy({ people: restored.people, cards: restored.cards, lists: restored.lists || [] }));
     setSession(null);
   }, []);
 
