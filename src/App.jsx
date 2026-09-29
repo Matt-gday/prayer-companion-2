@@ -75,6 +75,18 @@ const bottomColour = (bg) => (bg.match(/#[0-9A-Fa-f]{6}/g) || ['#141E46']).pop()
 // The sky's top colour right now.
 let currentTop = null;
 
+// The iPhone tints the area behind the clock from what's under it, but only
+// looks again when the page scrolls. After a sky change, scroll one pixel
+// and back so it takes the new colour.
+const nudgeScroll = () => {
+  const scroller = document.querySelector('.scroller');
+  if (!scroller) return;
+  const at = scroller.scrollTop;
+  const room = scroller.scrollHeight - scroller.clientHeight;
+  if (room < 1) return;
+  scroller.scrollTop = at >= 1 ? at - 1 : at + 1;
+  requestAnimationFrame(() => { scroller.scrollTop = at; });
+};
 
 function useSky(settings, now, quiet) {
   const key = currentSky(settings, now);
@@ -119,9 +131,16 @@ function useSky(settings, now, quiet) {
         void strip.offsetHeight;
         requestAnimationFrame(() => { strip.style.display = ''; });
       }
+      nudgeScroll();
     }
     currentTop = colour;
-    // No theme-color tag: the iPhone uses what the page draws behind the clock.
+    const old = document.querySelector('meta[name="theme-color"]');
+    if (!old || old.getAttribute('content') !== colour) {
+      const meta = document.createElement('meta');
+      meta.name = 'theme-color';
+      meta.content = colour;
+      if (old) old.replaceWith(meta); else document.head.appendChild(meta);
+    }
   }, [key, sky, settings.font, settings.size, settings.onboarded, quiet]);
   return key;
 }
