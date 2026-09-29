@@ -6,7 +6,7 @@ import { TopBar, Avatar } from '../components/ui.jsx';
 import { Plus, Search, Users, Check } from '../components/Icons.jsx';
 
 const TYPES = [['all', 'All'], ['people', 'People'], ['group', 'Groups'], ['org', 'Orgs']];
-const PRIOS = [['any', 'Any'], ['high', 'High'], ['med', 'Medium'], ['low', 'Low'], ['occ', 'Occas.']];
+const PRIOS = [['any', 'Any'], ['high', 'High'], ['med', 'Med'], ['low', 'Low'], ['occ', 'Occas.']];
 // The filters you last used, kept while the app is open, so coming back from
 // someone's page doesn't reset them.
 const remembered = { type: 'all', prio: 'any', query: '', archived: false };

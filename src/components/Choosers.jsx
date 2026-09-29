@@ -90,12 +90,28 @@ export function FontCards({ value, onChange }) {
 
 export function SizeSlider({ value, onChange }) {
   const i = Math.max(0, SIZES.indexOf(value));
+  // Changing the size grows or shrinks everything above the slider. Keep the
+  // slider in the same spot on screen by scrolling the page to match.
+  const ref = useRef(null);
+  const before = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    const scroller = el?.closest('.scroller');
+    if (before.current != null && scroller) {
+      scroller.scrollTop += el.getBoundingClientRect().top - before.current;
+    }
+    before.current = null;
+  }, [value]);
+  const change = (next) => {
+    before.current = ref.current?.getBoundingClientRect().top ?? null;
+    onChange(next);
+  };
   return (
-    <div className="size-slider">
+    <div className="size-slider" ref={ref}>
       <span style={{ fontSize: 13 }} aria-hidden="true">A</span>
       <input type="range" min="0" max="3" step="1" value={i} aria-label="Text size"
         aria-valuetext={['Small', 'Medium', 'Large', 'Extra large'][i]}
-        onChange={(e) => onChange(SIZES[Number(e.target.value)])} />
+        onChange={(e) => change(SIZES[Number(e.target.value)])} />
       <span style={{ fontSize: 22 }} aria-hidden="true">A</span>
     </div>
   );

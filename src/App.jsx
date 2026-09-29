@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useStore } from './store.jsx';
 import { SKIES, DEFAULT_GLASS, currentSky } from './skies.js';
 import { scrollToTop } from './scroll.js';
@@ -75,7 +75,7 @@ const bottomColour = (bg) => (bg.match(/#[0-9A-Fa-f]{6}/g) || ['#141E46']).pop()
 function useSky(settings, now, quiet) {
   const key = currentSky(settings, now);
   const sky = SKIES[key];
-  useEffect(() => {
+  useLayoutEffect(() => {
     const html = document.documentElement;
     setScreenHeight();
     let layers = [ONBOARDING_BG];
