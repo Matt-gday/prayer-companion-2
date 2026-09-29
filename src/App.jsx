@@ -72,6 +72,17 @@ const sunGlow = (quiet) => (quiet
 // taller than the painted sky.
 const bottomColour = (bg) => (bg.match(/#[0-9A-Fa-f]{6}/g) || ['#141E46']).pop();
 
+// The sky's top colour right now, and what it was when Settings opened.
+let currentTop = null;
+let topWhenSettingsOpened = null;
+const screenAfterReload = () => {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem('pc2_after_reload') || 'null');
+    sessionStorage.removeItem('pc2_after_reload');
+    return saved && saved.name ? saved : null;
+  } catch { return null; }
+};
+
 function useSky(settings, now, quiet) {
   const key = currentSky(settings, now);
   const sky = SKIES[key];
@@ -106,6 +117,17 @@ function useSky(settings, now, quiet) {
     // iPhones only notice a new status-bar colour when the tag itself is
     // replaced, not just changed, so swap in a fresh one.
     const colour = settings.onboarded ? sky.top : '#141E46';
+    // The iPhone takes the colour behind the clock from the strip along the
+    // top edge. When it changes, hide and re-show the strip so it's noticed.
+    if (currentTop && currentTop !== colour) {
+      const strip = document.querySelector('.edge-top');
+      if (strip) {
+        strip.style.display = 'none';
+        void strip.offsetHeight;
+        requestAnimationFrame(() => { strip.style.display = ''; });
+      }
+    }
+    currentTop = colour;
     const old = document.querySelector('meta[name="theme-color"]');
     if (!old || old.getAttribute('content') !== colour) {
       const meta = document.createElement('meta');
@@ -154,10 +176,21 @@ export default function App() {
   const store = useStore();
   const { settings, toast, dismissToast } = store;
   const now = useNow();
-  const [screen, setScreen] = useState({ name: 'home' });
+  const [screen, setScreen] = useState(() => screenAfterReload() || { name: 'home' });
   const skyKey = useSky(settings, now, screen.name !== 'home');
 
-  const go = (name, params = {}) => { setScreen({ name, ...params }); scrollToTop(); };
+  const go = (name, params = {}) => {
+    // Safety net: if the sky changed while in Settings, refresh quietly on the
+    // way out, since a fresh start always gets the colour behind the clock right.
+    if (screen.name === 'settings' && name !== 'settings' && name !== 'help' && topWhenSettingsOpened && currentTop !== topWhenSettingsOpened) {
+      try { sessionStorage.setItem('pc2_after_reload', JSON.stringify({ name, ...params })); } catch { /* ignore */ }
+      location.reload();
+      return;
+    }
+    if (name === 'settings' && screen.name !== 'settings' && screen.name !== 'help') topWhenSettingsOpened = currentTop;
+    setScreen({ name, ...params });
+    scrollToTop();
+  };
 
   if (!settings.onboarded) {
     return <Scroller className="onb"><Welcome skyKey={skyKey} now={now} /></Scroller>;
