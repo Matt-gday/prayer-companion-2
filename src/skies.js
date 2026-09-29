@@ -37,28 +37,28 @@ export const SKIES = {
   },
   // Colours
   twilight: {
-    name: 'Twilight', top: '#9D8FFF', ring: '#FFB199', go: '#6C5CE7',
-    bg: 'linear-gradient(165deg,#9D8FFF 0%,#5A4BC8 40%,#2A2560 75%,#12142A 100%)',
+    name: 'Twilight', top: '#7766EC', ring: '#FFB199', go: '#6C5CE7',
+    bg: 'linear-gradient(180deg,#7766EC 0%,#4C3EB6 40%,#231F55 75%,#0D0F22 100%)',
   },
   ocean: {
-    name: 'Ocean', top: '#7FE3D5', ring: '#FFFFFF', go: '#1F6FA8',
-    bg: 'linear-gradient(165deg,#7FE3D5 0%,#2BB3B1 32%,#1F6FA8 68%,#14264F 100%)',
+    name: 'Ocean', top: '#48BFB3', ring: '#FFFFFF', go: '#1F6FA8',
+    bg: 'linear-gradient(180deg,#48BFB3 0%,#1F9699 32%,#1A5C92 68%,#0E1E44 100%)',
   },
   rose: {
-    name: 'Dusk rose', top: '#FFB3C7', ring: '#FFD9A8', go: '#C24C7E',
-    bg: 'linear-gradient(165deg,#FFB3C7 0%,#E0668F 35%,#8B3A7F 70%,#2E1838 100%)',
+    name: 'Dusk rose', top: '#EE88A6', ring: '#FFD9A8', go: '#C24C7E',
+    bg: 'linear-gradient(180deg,#EE88A6 0%,#CE4F7C 35%,#7A3072 70%,#23112D 100%)',
   },
   forest: {
-    name: 'Forest', top: '#B8EBC8', ring: '#FFF3B0', go: '#1E7A5E',
-    bg: 'linear-gradient(165deg,#B8EBC8 0%,#4FB889 32%,#1E7A5E 66%,#0D2E28 100%)',
+    name: 'Forest', top: '#7BC99A', ring: '#FFF3B0', go: '#1E7A5E', extra: '#0A3D2B',
+    bg: 'linear-gradient(180deg,#7BC99A 0%,#389F73 32%,#18664E 66%,#092420 100%)',
   },
   golden: {
-    name: 'Golden hour', top: '#FFE08A', ring: '#FFFFFF', go: '#D65A3C',
-    bg: 'linear-gradient(165deg,#FFE08A 0%,#F5A34B 32%,#D65A3C 66%,#5B1F3D 100%)',
+    name: 'Golden hour', top: '#F5C35A', ring: '#FFFFFF', go: '#D65A3C',
+    bg: 'linear-gradient(180deg,#F5C35A 0%,#EC8B3B 32%,#C54C33 66%,#4B1832 100%)',
   },
   aurora: {
     name: 'Aurora', stars: true, top: '#0E1B2A', ring: '#7FF0C8', go: '#2FA88A', glass: 'rgba(255,255,255,.08)',
-    bg: `${AURORA_GLOW}, linear-gradient(175deg,#0E1B2A 0%,#0F1726 60%,#0A0F1C 100%)`,
+    bg: `${AURORA_GLOW}, linear-gradient(180deg,#0E1B2A 0%,#0F1726 60%,#0A0F1C 100%)`,
   },
 };
 

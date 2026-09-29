@@ -207,7 +207,7 @@ select.input { appearance: none; }
 .pray-main .check { color: var(--acc); display: flex; }
 .pray-main.done { background: var(--acc); color: #fff; }
 .pray-main.done .check { color: #fff; }
-.counter-extra { color: #7CF0B0; }
+.counter-extra { color: var(--extra, #7CF0B0); }
 
 /* Moving between cards: the old card slides off one side as the next slides
    in from the other. */
