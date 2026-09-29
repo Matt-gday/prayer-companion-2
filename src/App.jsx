@@ -72,15 +72,20 @@ const sunGlow = (quiet) => (quiet
 // taller than the painted sky.
 const bottomColour = (bg) => (bg.match(/#[0-9A-Fa-f]{6}/g) || ['#141E46']).pop();
 
-// The sky's top colour right now, and what it was when Settings opened.
+// The sky's top colour right now.
 let currentTop = null;
-let topWhenSettingsOpened = null;
-const screenAfterReload = () => {
-  try {
-    const saved = JSON.parse(sessionStorage.getItem('pc2_after_reload') || 'null');
-    sessionStorage.removeItem('pc2_after_reload');
-    return saved && saved.name ? saved : null;
-  } catch { return null; }
+
+// The iPhone tints the area behind the clock from what's under it, but only
+// looks again when the page scrolls. After a sky change, scroll one pixel
+// and back so it takes the new colour.
+const nudgeScroll = () => {
+  const scroller = document.querySelector('.scroller');
+  if (!scroller) return;
+  const at = scroller.scrollTop;
+  const room = scroller.scrollHeight - scroller.clientHeight;
+  if (room < 1) return;
+  scroller.scrollTop = at >= 1 ? at - 1 : at + 1;
+  requestAnimationFrame(() => { scroller.scrollTop = at; });
 };
 
 function useSky(settings, now, quiet) {
@@ -126,6 +131,7 @@ function useSky(settings, now, quiet) {
         void strip.offsetHeight;
         requestAnimationFrame(() => { strip.style.display = ''; });
       }
+      nudgeScroll();
     }
     currentTop = colour;
     const old = document.querySelector('meta[name="theme-color"]');
@@ -176,21 +182,10 @@ export default function App() {
   const store = useStore();
   const { settings, toast, dismissToast } = store;
   const now = useNow();
-  const [screen, setScreen] = useState(() => screenAfterReload() || { name: 'home' });
+  const [screen, setScreen] = useState({ name: 'home' });
   const skyKey = useSky(settings, now, screen.name !== 'home');
 
-  const go = (name, params = {}) => {
-    // Safety net: if the sky changed while in Settings, refresh quietly on the
-    // way out, since a fresh start always gets the colour behind the clock right.
-    if (screen.name === 'settings' && name !== 'settings' && name !== 'help' && topWhenSettingsOpened && currentTop !== topWhenSettingsOpened) {
-      try { sessionStorage.setItem('pc2_after_reload', JSON.stringify({ name, ...params })); } catch { /* ignore */ }
-      location.reload();
-      return;
-    }
-    if (name === 'settings' && screen.name !== 'settings' && screen.name !== 'help') topWhenSettingsOpened = currentTop;
-    setScreen({ name, ...params });
-    scrollToTop();
-  };
+  const go = (name, params = {}) => { setScreen({ name, ...params }); scrollToTop(); };
 
   if (!settings.onboarded) {
     return <Scroller className="onb"><Welcome skyKey={skyKey} now={now} /></Scroller>;
