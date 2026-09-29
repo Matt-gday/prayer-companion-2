@@ -17,7 +17,7 @@
   --dot-ring: rgba(255,255,255,.6); --tick: rgba(255,255,255,.78);
   --ui: 'Inter', system-ui, -apple-system, sans-serif;
   /* Space between the status bar and the top of each screen. */
-  --top-gap: calc(env(safe-area-inset-top) + 10px);
+  --top-gap: calc(env(safe-area-inset-top) + 13px);
 }
 
 /* Things you read, and editing panels: frosted white glass (70%), so the
