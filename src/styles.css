@@ -55,6 +55,14 @@ body { position: fixed; inset: 0; }
 .scroller.more {
   -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 44px), transparent);
   mask-image: linear-gradient(to bottom, #000 calc(100% - 44px), transparent); }
+/* Once scrolled, the top edge feathers too, instead of a hard line.
+   (Settings keeps a short fade so its pinned bar stays crisp.) */
+.scroller.up {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 calc(var(--top-gap) + 18px));
+  mask-image: linear-gradient(to bottom, transparent, #000 calc(var(--top-gap) + 18px)); }
+.scroller.up.more {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 calc(var(--top-gap) + 18px), #000 calc(100% - 44px), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 calc(var(--top-gap) + 18px), #000 calc(100% - 44px), transparent); }
 body { background: transparent; color: var(--text); font-family: var(--ui); font-size: 15px; -webkit-font-smoothing: antialiased; overscroll-behavior: none; }
 button, input, textarea, select { font: inherit; color: inherit; }
 button { background: none; border: 0; cursor: pointer; }
@@ -346,7 +354,7 @@ select.input { appearance: none; }
 .size-slider input::-moz-range-thumb { width: 26px; height: 26px; border: 0; border-radius: 13px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
 
 /* Pinned top bar */
-.pinned { position: sticky; top: calc(env(safe-area-inset-top) + 9px); z-index: 5; border-radius: 16px; padding: 0 8px 0 4px; background: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.pinned { position: sticky; top: var(--top-gap); z-index: 5; border-radius: 16px; padding: 0 8px 0 4px; background: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 
 /* Home tiles (three) */
 .home-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
@@ -390,3 +398,10 @@ select.input { appearance: none; }
 
 /* Prayer lists: a person's points opened in place */
 .list-open { display: flex; flex-direction: column; gap: 0; background: rgba(35,27,51,.05); border-radius: 12px; margin: 0 -8px; padding: 6px 8px 10px; }
+
+.scroller.up:has(.pinned) {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--top-gap));
+  mask-image: linear-gradient(to bottom, transparent, #000 var(--top-gap)); }
+.scroller.up.more:has(.pinned) {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--top-gap), #000 calc(100% - 44px), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 var(--top-gap), #000 calc(100% - 44px), transparent); }

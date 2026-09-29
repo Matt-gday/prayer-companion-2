@@ -141,7 +141,10 @@ function Scroller({ className = '', children }) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return undefined;
-    const update = () => el.classList.toggle('more', el.scrollHeight - el.clientHeight - el.scrollTop > 4);
+    const update = () => {
+      el.classList.toggle('more', el.scrollHeight - el.clientHeight - el.scrollTop > 4);
+      el.classList.toggle('up', el.scrollTop > 4);
+    };
     update();
     el.addEventListener('scroll', update, { passive: true });
     const ro = new ResizeObserver(update);
