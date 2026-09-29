@@ -9,7 +9,8 @@ import CardPage from './screens/CardPage.jsx';
 import Settings from './screens/Settings.jsx';
 import Help from './screens/Help.jsx';
 import Welcome from './screens/Welcome.jsx';
-import EditCard from './screens/EditCard.jsx';
+import Details from './screens/Details.jsx';
+import PrayerPoints from './screens/PrayerPoints.jsx';
 import AddFlow from './screens/AddFlow.jsx';
 import { ListsHome, ListPage } from './screens/Lists.jsx';
 import Sparkles from './components/Sparkles.jsx';
@@ -133,15 +134,15 @@ export default function App() {
   const [screen, setScreen] = useState({ name: 'home' });
   const skyKey = useSky(settings, now, screen.name !== 'home');
 
-  const [editing, setEditing] = useState(null); // card id being edited in the sheet
-
   const go = (name, params = {}) => { setScreen({ name, ...params }); scrollToTop(); };
 
   if (!settings.onboarded) {
     return <Scroller className="onb"><Welcome skyKey={skyKey} now={now} /></Scroller>;
   }
 
-  const nav = { go, edit: setEditing, add: () => go('add', { from: screen.name }), current: screen.name, from: screen.from, skyKey, now };
+  // Details and Prayer points pages remember where to come back to.
+  const sub = (name) => (cardId) => go(name, { cardId, from: screen.name, cardFrom: screen.name === 'card' ? screen.from : screen.cardFrom });
+  const nav = { go, edit: sub('details'), points: sub('points'), add: () => go('add', { from: screen.name }), current: screen.name, from: screen.from, skyKey, now };
 
   let content;
   switch (screen.name) {
@@ -150,6 +151,8 @@ export default function App() {
     case 'card': content = <CardPage nav={nav} cardId={screen.cardId} from={screen.from} />; break;
     case 'settings': content = <Settings nav={nav} focus={screen.focus} />; break;
     case 'help': content = <Help nav={nav} />; break;
+    case 'details': content = <Details nav={nav} cardId={screen.cardId} from={screen.from} cardFrom={screen.cardFrom} />; break;
+    case 'points': content = <PrayerPoints nav={nav} cardId={screen.cardId} from={screen.from} cardFrom={screen.cardFrom} />; break;
     case 'add': content = <AddFlow nav={nav} from={screen.from} />; break;
     case 'lists': content = <ListsHome nav={nav} />; break;
     case 'list': content = <ListPage nav={nav} listId={screen.listId} />; break;
@@ -161,7 +164,6 @@ export default function App() {
       <SkyBackground skyKey={skyKey} quiet={screen.name !== 'home'} />
       {screen.name === 'home' && settings.sparkles !== false && <Sparkles />}
       <Scroller>{content}</Scroller>
-      {editing && <EditCard cardId={editing} nav={nav} onClose={() => setEditing(null)} />}
       {toast && (
         <div className="toast" role="status" key={toast.id}>
           <span>{toast.message}</span>

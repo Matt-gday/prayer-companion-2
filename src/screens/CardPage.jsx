@@ -6,7 +6,7 @@ import {
 } from '../model.js';
 import { TopBar, PriorityPill } from '../components/ui.jsx';
 import { isEveryDay } from '../scheduler.js';
-import { Check, Clock } from '../components/Icons.jsx';
+import { Check, Clock, Pencil, Chevron } from '../components/Icons.jsx';
 import AddPointInline from '../components/AddPointInline.jsx';
 
 const duration = (from, to) => {
@@ -58,7 +58,7 @@ export default function CardPage({ nav, cardId, from }) {
   return (
     <div className="screen">
       <TopBar onBack={back} backLabel={backLabel}
-        right={<button className="link" style={{ color: '#fff' }} onClick={() => nav.edit(card.id)}>Edit</button>} />
+        right={<button className="icon-btn glass" onClick={() => nav.edit(card.id)} aria-label="Edit details"><Pencil /></button>} />
       <div className="stack" style={{ padding: '0 4px', gap: 6 }}>
         <span style={{ alignSelf: 'flex-start' }}><PriorityPill priority={card.priority} everyDay={isEveryDay(card)} /></span>
         <h1 className={`title ${cardKind(card, people) === 'org' ? 'italic' : ''}`} style={{ marginTop: 4 }}>{cardName(card, people)}</h1>
@@ -80,6 +80,10 @@ export default function CardPage({ nav, cardId, from }) {
           </div>
         ))}
         <AddPointInline target={solo && person ? { kind: 'person', id: person.id } : { kind: 'card', id: card.id }} />
+        <button className="spread" style={{ borderTop: '1px solid var(--line)', paddingTop: 10, minHeight: 40, color: 'var(--sub)', fontSize: 14, fontWeight: 600 }}
+          onClick={() => nav.points(card.id)}>
+          <span>Manage prayer points</span><Chevron />
+        </button>
       </div>
 
       {answered.length > 0 && (
