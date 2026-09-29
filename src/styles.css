@@ -413,3 +413,4 @@ select.input { appearance: none; }
 
 /* The big name box on the welcome screen keeps its own see-through look. */
 .input.feature::placeholder { color: rgba(255,255,255,.55); }
+.input input::placeholder { color: var(--field-ph); }
