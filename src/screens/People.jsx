@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../store.jsx';
 import { cardName, cardKind, cardMembers, personName, agoText, lastPrayed, PRIORITY_LABEL } from '../model.js';
 import { isEveryDay } from '../scheduler.js';
@@ -7,6 +7,10 @@ import { Plus, Search, Users, Check } from '../components/Icons.jsx';
 
 const TYPES = [['all', 'All'], ['people', 'People'], ['group', 'Groups'], ['org', 'Orgs']];
 const PRIOS = [['any', 'Any'], ['high', 'High'], ['med', 'Medium'], ['low', 'Low'], ['occ', 'Occas.']];
+// The filters you last used, kept while the app is open, so coming back from
+// someone's page doesn't reset them.
+const remembered = { type: 'all', prio: 'any', query: '', archived: false };
+
 const SORTS = [['first', 'First name'], ['last', 'Last name'], ['prayed', 'Last prayed']];
 
 const noThe = (name) => name.replace(/^the\s+/i, '');
@@ -62,10 +66,11 @@ function SortMenu({ value, onChange }) {
 export default function People({ nav }) {
   const { people, cards, date, settings, setSetting } = useStore();
   const sort = settings.peopleSort || 'first';
-  const [type, setType] = useState('all');
-  const [prio, setPrio] = useState('any');
-  const [query, setQuery] = useState('');
-  const [archived, setArchived] = useState(false);
+  const [type, setType] = useState(remembered.type);
+  const [prio, setPrio] = useState(remembered.prio);
+  const [query, setQuery] = useState(remembered.query);
+  const [archived, setArchived] = useState(remembered.archived);
+  useEffect(() => { Object.assign(remembered, { type, prio, query, archived }); }, [type, prio, query, archived]);
 
   const q = query.trim().toLowerCase();
   const visible = cards.filter((c) => !c.dissolved && !!c.archived === archived && (prio === 'any' || c.priority === prio));
@@ -99,14 +104,14 @@ export default function People({ nav }) {
       });
   }
 
-  // Sort, and for name sorts add letter headings like the Contacts app.
+  // Sort.
   const byName = (key) => (a, b) => a[key].localeCompare(b[key], undefined, { sensitivity: 'base' });
   if (sort === 'prayed') {
     rows.sort((a, b) => (lastPrayed(a.card) || '').localeCompare(lastPrayed(b.card) || '') || byName('first')(a, b));
   } else {
     rows.sort(byName(sort));
   }
-  const letter = (row) => (sort === 'prayed' ? '' : (row[sort][0] || '#').toUpperCase().replace(/[^A-Z]/, '#'));
+
 
   return (
     <div className="screen">
@@ -145,10 +150,8 @@ export default function People({ nav }) {
         </div>
       ) : (
         <div className="list cream">
-          {rows.map((r, i) => (
-            <Fragment key={r.key}>
-            {letter(r) && letter(r) !== (i > 0 ? letter(rows[i - 1]) : '') && <div className="list-letter">{letter(r)}</div>}
-            <button className="list-row" onClick={() => nav.go('card', { cardId: r.card.id, from: 'people' })}>
+          {rows.map((r) => (
+            <button key={r.key} className="list-row" onClick={() => nav.go('card', { cardId: r.card.id, from: 'people' })}>
               <Avatar kind={r.kind === 'person' && r.card.isGroup && type !== 'people' ? 'group' : r.kind} name={r.name} priority={r.card.priority} />
               <span className="grow stack" style={{ gap: 3 }}>
                 <span className={r.kind === 'org' ? 'italic' : ''} style={{ fontSize: 15, fontWeight: sort === 'last' && r.lastPart ? 400 : 500 }}>{sort === 'last' ? <Bolded name={r.name} part={r.lastPart} /> : r.name}</span>
@@ -158,7 +161,6 @@ export default function People({ nav }) {
               {isEveryDay(r.card) && <span className="tiny sub">Every day</span>}
               <span className={`dot dot-${r.card.priority}`} style={{ width: 9, height: 9 }} aria-label={`${PRIORITY_LABEL[r.card.priority]} priority`} />
             </button>
-            </Fragment>
           ))}
         </div>
       )}
