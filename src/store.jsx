@@ -450,7 +450,8 @@ export function StoreProvider({ children }) {
       start: l.week.start, end: today(), ticks: l.week.ticks, prayedAt: l.week.prayedAt || null,
       points: l.people.reduce((n, p) => n + p.requests.length, 0),
       prayedPoints: l.people.reduce((n, p) => n + p.requests.filter((r) => l.week.ticks[r.id]).length, 0),
-      people: l.people.map((p) => ({ name: p.name, requests: p.requests.map((r) => r.text) })),
+      // prayed[i] says whether requests[i] was checked that week.
+      people: l.people.map((p) => ({ name: p.name, requests: p.requests.map((r) => r.text), prayed: p.requests.map((r) => !!l.week.ticks[r.id]) })),
     }],
     week: { start: today(), ticks: {} },
     people: keepRequests ? l.people : l.people.map((p) => ({ ...p, requests: [] })),

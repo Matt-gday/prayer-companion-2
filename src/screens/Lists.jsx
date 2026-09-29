@@ -297,6 +297,14 @@ function ShareSheet({ title, text, onClose }) {
   );
 }
 
+// A tiny check in a circle, in the text colour, beside points that were prayed for.
+const PrayedMark = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"
+    style={{ verticalAlign: '-1px', marginRight: 4, opacity: 0.75 }} role="img" aria-label="Prayed for">
+    <circle cx="12" cy="12" r="10" /><path d="M7.5 12.5l3 3 6-6.5" />
+  </svg>
+);
+
 // Every past week of a list, newest first, each one shareable.
 export function ListHistory({ nav, listId }) {
   const { lists } = useStore();
@@ -328,7 +336,15 @@ export function ListHistory({ nav, listId }) {
             </div>
             {people.length === 0 && <span className="small sub">No prayer points that week.</span>}
             {people.map((p) => (
-              <span key={p.name} className="small" style={{ lineHeight: 1.45 }}><b>{p.name}:</b> {p.requests.join('; ')}</span>
+              <span key={p.name} className="small" style={{ lineHeight: 1.6 }}>
+                <b>{p.name}:</b>{' '}
+                {p.requests.map((text, i) => (
+                  <span key={i} style={{ whiteSpace: 'normal' }}>
+                    {i > 0 && '; '}
+                    {p.prayed?.[i] && <PrayedMark />}{text}
+                  </span>
+                ))}
+              </span>
             ))}
           </div>
         );
