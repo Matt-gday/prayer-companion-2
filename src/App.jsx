@@ -92,7 +92,16 @@ function useSky(settings, now, quiet) {
     html.style.setProperty('--acc', sky.go);
     html.style.setProperty('--ring', sky.ring);
     html.style.setProperty('--glass', sky.glass || DEFAULT_GLASS);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', settings.onboarded ? sky.top : '#141E46');
+    // iPhones only notice a new status-bar colour when the tag itself is
+    // replaced, not just changed, so swap in a fresh one.
+    const colour = settings.onboarded ? sky.top : '#141E46';
+    const old = document.querySelector('meta[name="theme-color"]');
+    if (!old || old.getAttribute('content') !== colour) {
+      const meta = document.createElement('meta');
+      meta.name = 'theme-color';
+      meta.content = colour;
+      if (old) old.replaceWith(meta); else document.head.appendChild(meta);
+    }
   }, [key, sky, settings.font, settings.size, settings.onboarded, quiet]);
   return key;
 }
