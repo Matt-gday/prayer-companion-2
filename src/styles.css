@@ -382,3 +382,9 @@ select.input { appearance: none; }
   .rotate-note svg { width: 44px; height: 44px; }
 }
 .home-pill .dot { width: 0.7em; height: 0.7em; border-radius: 50%; }
+
+/* People list: sort button, its menu, and letter headings */
+.sort-btn { display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 11px; border-radius: 16px; font-size: 13px; font-weight: 600; background: var(--glass); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.sort-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; min-width: 200px; background: #fff; color: #231B33; border-radius: 16px; box-shadow: 0 14px 34px rgba(0,0,0,.28); display: flex; flex-direction: column; overflow: hidden; --sub: #5E5470; }
+.sort-menu button { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 46px; padding: 8px 14px; font-size: 15px; border-top: 1px solid rgba(35,27,51,.08); }
+.list-letter { font-size: 12px; font-weight: 700; color: var(--sub); padding: 10px 0 4px; border-bottom: 1px solid var(--line); }
