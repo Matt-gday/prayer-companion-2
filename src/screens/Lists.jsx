@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useStore } from '../store.jsx';
 import { formatShortDate, today } from '../model.js';
 import { TopBar, Sheet, Tick, useConfirm, AutoText } from '../components/ui.jsx';
-import { Back, Plus, List, Chevron, Grip, Trash, Upload, Check } from '../components/Icons.jsx';
+import { Back, Plus, List, Chevron, Grip, Trash, Upload, Check, Pencil, History } from '../components/Icons.jsx';
 
 const weekLabel = (iso) => `Week of ${new Date(`${iso}T12:00:00`).toLocaleDateString('en-AU', { day: 'numeric', month: 'long' })}`;
 const COLOURS = ['var(--high)', 'var(--low)', 'var(--med)', 'var(--occ)'];
@@ -106,8 +106,15 @@ export function ListPage({ nav, listId }) {
       <div className="topbar">
         <button className="back" onClick={() => nav.go('lists')}><Back />Lists</button>
         <span className="row" style={{ gap: 6 }}>
-          {!editing && <button className="icon-btn glass" style={{ width: 40, height: 40 }} aria-label="Share this week’s requests" onClick={() => setSheet('share')}><Upload size={18} /></button>}
-          <button className="link" style={{ color: '#fff', padding: '0 6px' }} onClick={() => { setEditing(!editing); setOpen(null); }}>{editing ? 'Done' : 'Edit'}</button>
+          {!editing && (
+            <>
+              <button className="icon-btn glass" style={{ width: 40, height: 40 }} aria-label="Share this week’s requests" onClick={() => setSheet('share')}><Upload size={18} /></button>
+              <button className="icon-btn glass" style={{ width: 40, height: 40 }} aria-label="Past weeks" onClick={() => nav.go('listhistory', { listId: list.id })}><History /></button>
+            </>
+          )}
+          {editing
+            ? <button className="icon-btn" style={{ width: 40, height: 40, background: '#fff', color: 'var(--acc)' }} aria-label="Done editing" onClick={() => setEditing(false)}><Check size={18} /></button>
+            : <button className="icon-btn glass" style={{ width: 40, height: 40 }} aria-label="Edit list" onClick={() => { setEditing(true); setOpen(null); }}><Pencil /></button>}
         </span>
       </div>
 

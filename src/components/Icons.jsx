@@ -14,6 +14,7 @@ export const Check = (p) => <Svg sw={2.4} {...p}><path d="M5 12.5l4.5 4.5L19 7.5
 export const ListCheck = (p) => <Svg size={18} sw={1.9} {...p}><path d="M11 6h9M11 12h9M11 18h9M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5L7.5 11M3.5 18l1.5 1.5L7.5 17" /></Svg>;
 export const Pencil = (p) => <Svg size={18} sw={1.8} {...p}><path d="M4 20h4L19 9a2.1 2.1 0 00-3-3L5 17v3zM14 7l3 3" /></Svg>;
 export const Plus = (p) => <Svg size={16} sw={2.2} {...p}><path d="M12 5v14M5 12h14" /></Svg>;
+export const History = (p) => <Svg size={18} sw={1.9} {...p}><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6M3.5 4v4h4" /><path d="M12 8v4l3 2" /></Svg>;
 export const Clock = (p) => <Svg size={14} {...p}><circle cx="12" cy="12" r="9" /><path d="M12 7.5V12l3 2" /></Svg>;
 export const List = (p) => <Svg {...p}><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" /></Svg>;
 export const Cards = (p) => <Svg sw={1.8} {...p}><rect x="4" y="5" width="16" height="14" rx="3" /><path d="M8 10h8M8 14h5" /></Svg>;
