@@ -80,9 +80,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, [contentedita
 .sky-bg { position: fixed; top: 0; left: 0; right: 0; height: var(--screen-h, 100lvh); z-index: 0; pointer-events: none; overflow: hidden;
   -webkit-mask: linear-gradient(#000 70%, transparent 90%); mask: linear-gradient(#000 70%, transparent 90%); }
 .edge-tint { position: fixed; left: 0; right: 0; z-index: 0; pointer-events: none; }
-.edge-top { top: 0; height: max(env(safe-area-inset-top), 2px); }
-.edge-bottom { bottom: 0; height: max(env(safe-area-inset-bottom), 2px); }
-.sky-paint { position: fixed; top: 0; left: 0; right: 0; height: var(--screen-h, 100lvh); z-index: 0; pointer-events: none; background-size: 100% 100%; background-repeat: no-repeat; }
+.edge-top { top: 0; height: max(env(safe-area-inset-top), 2px); background: var(--sky-top, transparent); }
+.edge-bottom { bottom: 0; height: max(env(safe-area-inset-bottom), 2px); background: linear-gradient(to bottom, transparent, var(--sky-bottom, transparent)); }
 .sparkles { position: fixed; top: 0; left: 0; width: 100vw; height: var(--screen-h, 100lvh); z-index: 0; pointer-events: none; }
 .sky-bg > div { position: absolute; inset: 0; }
 .sky-stars {
