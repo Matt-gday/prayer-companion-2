@@ -2,20 +2,20 @@ import { useState } from 'react';
 import { useStore } from '../store.jsx';
 import { formatShortDate, today } from '../model.js';
 import { TopBar, Sheet, Tick, useConfirm, AutoText } from '../components/ui.jsx';
-import { Back, Plus, List, Chevron, Grip, Trash, Upload, Check, Pencil, History } from '../components/Icons.jsx';
+import { Back, Plus, List, Chevron, Grip, Trash, Upload, Check, Pencil, History, Close, Next } from '../components/Icons.jsx';
 
 const weekLabel = (iso) => `Week of ${new Date(`${iso}T12:00:00`).toLocaleDateString('en-AU', { day: 'numeric', month: 'long' })}`;
 const COLOURS = ['var(--high)', 'var(--low)', 'var(--med)', 'var(--occ)'];
 
 // All prayer lists (growth group, staff team…). Separate from daily cards.
 export function ListsHome({ nav }) {
-  const { lists, addList } = useStore();
-  const [creating, setCreating] = useState(false);
+  const { lists } = useStore();
+  const create = () => nav.go('newlist');
 
   return (
     <div className="screen">
       <TopBar onBack={() => nav.go('home')} backLabel="Home"
-        right={<button className="btn white small" onClick={() => setCreating(true)}><Plus />New list</button>} />
+        right={<button className="btn white small" onClick={create}><Plus />New list</button>} />
       <h1 className="title" style={{ padding: '0 4px' }}>Prayer lists</h1>
       <p style={{ opacity: 0.85, lineHeight: 1.45, padding: '0 4px', marginTop: -4 }}>
         For your growth group, a team, or anyone you pray for together. Separate from your daily cards, and everyone is on one screen.
@@ -34,34 +34,42 @@ export function ListsHome({ nav }) {
           </button>
         );
       })}
-      <button className="surface" style={{ border: '1.5px dashed rgba(255,255,255,.4)', background: 'transparent', fontWeight: 600, padding: 16 }} onClick={() => setCreating(true)}>
+      <button className="surface" style={{ border: '1.5px dashed rgba(255,255,255,.4)', background: 'transparent', fontWeight: 600, padding: 16 }} onClick={create}>
         + New list
       </button>
-      {creating && (
-        <NewListSheet onClose={() => setCreating(false)} onCreate={(name, names) => {
-          const id = addList(name, names);
-          setCreating(false);
-          nav.go('list', { listId: id });
-        }} />
-      )}
     </div>
   );
 }
 
-function NewListSheet({ onClose, onCreate }) {
+// A new prayer list, as a full page like adding a person.
+export function NewList({ nav }) {
+  const { addList } = useStore();
   const [name, setName] = useState('');
   const [names, setNames] = useState('');
   const [error, setError] = useState('');
+  const create = () => {
+    if (!name.trim()) { setError('Give the list a name'); return; }
+    const id = addList(name, names.split('\n'));
+    nav.go('list', { listId: id });
+  };
   return (
-    <Sheet onClose={onClose} label="New list">
-      <div className="spread"><span style={{ fontSize: 18, fontWeight: 600 }}>New prayer list</span><button className="link" onClick={onClose}>Cancel</button></div>
-      <label className="field">Name<input className="input" autoFocus placeholder="Growth group" value={name} onChange={(e) => { setName(e.target.value); setError(''); }} /></label>
-      <label className="field">People (one per line, you can add more later)
-        <textarea className="input" rows={5} placeholder={'Josh\nNathan\nChris & Amy'} value={names} onChange={(e) => setNames(e.target.value)} />
+    <div className="screen">
+      <div className="topbar">
+        <button className="back" onClick={() => nav.go('lists')}><Close size={18} />Cancel</button>
+        <span />
+      </div>
+      <h1 className="big-title" style={{ fontSize: 30 }}>New prayer list</h1>
+      <p style={{ opacity: 0.85, marginTop: -6, lineHeight: 1.45 }}>For a growth group, a team, or anyone you pray for together.</p>
+      <label className="field">List name
+        <input className="input" autoFocus placeholder="Growth group" value={name} onChange={(e) => { setName(e.target.value); setError(''); }} />
       </label>
-      {error && <span className="small danger">{error}</span>}
-      <button className="btn primary" onClick={() => (name.trim() ? onCreate(name, names.split('\n')) : setError('Give the list a name'))}>Create list</button>
-    </Sheet>
+      <label className="field">People (one per line, you can add more later)
+        <textarea className="input" rows={6} placeholder={'Josh\nNathan\nChris & Amy'} value={names} onChange={(e) => setNames(e.target.value)} />
+      </label>
+      {error && <div className="small" style={{ color: '#FFC2B8' }}>{error}</div>}
+      <div style={{ flex: 1 }} />
+      <button className="continue" onClick={create}>Create list<span className="arrow"><Next size={20} /></span></button>
+    </div>
   );
 }
 
