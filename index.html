@@ -18,10 +18,24 @@
 </head>
 <body>
   <div id="root"></div>
-  <div class="rotate-note" aria-live="polite">
+  <!-- Hidden unless the stylesheet loads and the phone is sideways. -->
+  <div class="rotate-note" aria-live="polite" style="display:none">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M11 18h2"/></svg>
     Please turn your phone upright
   </div>
+  <script>
+    // If the app hasn't appeared after a few seconds (for example the phone
+    // kept an old copy of this page whose files have since been replaced),
+    // reload once to fetch everything fresh.
+    setTimeout(function () {
+      var root = document.getElementById('root');
+      var last = Number(sessionStorage.getItem('pc2_blank_reload') || 0);
+      if (root && !root.children.length && Date.now() - last > 60000) {
+        sessionStorage.setItem('pc2_blank_reload', String(Date.now()));
+        location.reload();
+      }
+    }, 4000);
+  </script>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>

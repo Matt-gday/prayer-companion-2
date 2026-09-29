@@ -23,7 +23,9 @@ self.addEventListener('fetch', (event) => {
 
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
+      // Always ask the server for the page itself, never the phone's own
+      // cache, so it never points at files from an older version.
+      fetch(request.url, { cache: 'no-store', credentials: 'same-origin' })
         .then((response) => {
           const copy = response.clone();
           caches.open(CACHE).then((cache) => cache.put('./index.html', copy));
