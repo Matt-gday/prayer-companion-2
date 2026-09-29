@@ -181,9 +181,6 @@ export function ListPage({ nav, listId }) {
             ? <button className="btn white" onClick={() => nav.go('listpray', { listId: list.id })}>Pray</button>
             : <span className="small" style={{ textAlign: 'center', opacity: 0.85 }}>Add some prayer points, then you can pray through them.</span>}
           <button className="btn secondary" onClick={() => setSheet('week')}>Start a new week</button>
-          {(list.history || []).length > 0 && (
-            <button className="small" style={{ minHeight: 40, opacity: 0.85 }} onClick={() => nav.go('listhistory', { listId: list.id })}>Past weeks ({list.history.length})</button>
-          )}
         </>
       )}
 
@@ -310,10 +307,8 @@ export function ListHistory({ nav, listId }) {
   return (
     <div className="screen">
       <TopBar onBack={() => nav.go('list', { listId })} backLabel={list.name} />
-      <div className="stack" style={{ gap: 2, padding: '0 4px' }}>
-        <span className="small" style={{ opacity: 0.9 }}>Past weeks of</span>
-        <h1 className="title" style={{ lineHeight: 1.05 }}>{list.name}</h1>
-      </div>
+      <h1 className="title" style={{ fontSize: 32, padding: '0 4px' }}>{list.name}</h1>
+      <span className="small" style={{ opacity: 0.8, padding: '0 4px', marginTop: -6 }}>Past weeks</span>
       {weeks.length === 0 && <div className="surface empty">No past weeks yet. They’re saved each time you start a new week.</div>}
       {weeks.map((w) => {
         const people = (w.people || []).filter((p) => p.requests.length);
