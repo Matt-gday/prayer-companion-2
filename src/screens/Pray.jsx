@@ -7,7 +7,7 @@ import {
 import { isCardDone } from '../scheduler.js';
 import { Tick, PriorityPill } from '../components/ui.jsx';
 import AddPointInline from '../components/AddPointInline.jsx';
-import { Back, Next, Prev, List, Cards, Pencil, Check, Clock } from '../components/Icons.jsx';
+import { Back, Next, Prev, List, Cards, Pencil, Check, Clock, Chevron } from '../components/Icons.jsx';
 
 function ViewToggle({ view, onChange }) {
   return (
@@ -167,7 +167,7 @@ export default function Pray({ nav }) {
         <div key={card.id} className={`pray-card ${outgoing ? `card-in-${leaving.dir > 0 ? 'right' : 'left'}` : ''}`}
           style={drag ? { transform: `translateX(${drag.x}px)`, transition: drag.active ? 'none' : 'transform .25s ease-out' } : undefined}
           onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} onTouchCancel={() => { touch.current = null; setDrag(null); }}>
-          <PrayerCard card={card} onEdit={() => nav.edit(card.id)} />
+          <PrayerCard card={card} onEdit={() => nav.edit(card.id)} onManage={() => nav.points(card.id)} />
         </div>
       </div>
       <PrayerFoot card={card} onNext={() => go(1)} onPrev={() => go(-1)} />
@@ -175,7 +175,7 @@ export default function Pray({ nav }) {
   );
 }
 
-function PrayerCard({ card, onEdit }) {
+function PrayerCard({ card, onEdit, onManage }) {
   const { people, session, date, toggleTick } = useStore();
   const members = cardMembers(card, people);
   const keys = tickKeys(card, people);
@@ -238,6 +238,11 @@ function PrayerCard({ card, onEdit }) {
         )}
 
         <AddPointInline key={card.id} target={pointTarget} />
+        {onManage && (
+          <button className="link" style={{ alignSelf: 'flex-start', fontSize: 14, color: 'var(--sub)', marginTop: -4 }} onClick={onManage}>
+            Manage prayer points<Chevron size={14} />
+          </button>
+        )}
       </div>
     </>
   );

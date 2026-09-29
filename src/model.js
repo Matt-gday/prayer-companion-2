@@ -57,6 +57,10 @@ export const agoText = (iso, now = today()) => {
   return `${d} days ago`;
 };
 
+// Was this point ever prayed for? True if its card was prayed on any day
+// while the point was active.
+export const everPrayed = (pt, dates) => (dates || []).some((d) => d >= pt.added && d <= (pt.closed || '9999-12-31'));
+
 export const newPoint = (text, date = today()) => ({ id: newId(), text: text.trim(), added: date, status: 'active', closed: null });
 
 export const splitLines = (text) => (text || '').split('\n').map((l) => l.trim()).filter(Boolean);

@@ -1,5 +1,5 @@
 import { useStore } from '../store.jsx';
-import { cardMembers, cardName, personName, formatShortDate, formatMonthYear } from '../model.js';
+import { cardMembers, cardName, personName, formatShortDate, formatMonthYear, everPrayed } from '../model.js';
 import { TopBar } from '../components/ui.jsx';
 import PointEditor from '../components/PointEditor.jsx';
 import { Check } from '../components/Icons.jsx';
@@ -36,7 +36,8 @@ export default function PrayerPoints({ nav, cardId, from, cardFrom }) {
     .flatMap((s) => s.points.filter((pt) => pt.status === status).map((pt) => ({ ...pt, section: s })))
     .sort((a, b) => (a.closed < b.closed ? 1 : -1));
   const answered = closed('answered');
-  const past = closed('removed');
+  const dates = [...(card.prayed || []), ...members.flatMap((p) => p.prayed || [])];
+  const past = closed('removed').filter((pt) => everPrayed(pt, dates));
   const label = (pt) => !solo && <span className="sub" style={{ fontSize: 13, fontWeight: 600 }}>{pt.section.title.replace(/^The whole /, '').replace(/^./, (c) => c.toUpperCase())}: </span>;
 
   // Answered points keep their record, so praying again starts a fresh copy.

@@ -4,7 +4,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  newId, newPoint, today, addDate, removeDate, cardMembers, tickKeys,
+  newId, newPoint, today, addDate, removeDate, cardMembers, tickKeys, everPrayed,
 } from './model.js';
 import { newSession, applyLimit, isCardDone, nextCards, prayedCount } from './scheduler.js';
 import { importV1, isV1Backup } from './importV1.js';
@@ -140,10 +140,32 @@ export function StoreProvider({ children }) {
       return [...active, ...rest];
     })), []);
 
+  // Days the point's owner was prayed for: their own card(s), or the group card.
+  const prayedDatesFor = (d, target) => (target.kind === 'card'
+    ? d.cards.find((c) => c.id === target.id)?.prayed || []
+    : [...(d.people.find((p) => p.id === target.id)?.prayed || []),
+      ...d.cards.filter((c) => c.personIds.includes(target.id)).flatMap((c) => c.prayed || [])]);
+
+  // Deleting keeps a point in the history only if it was ever prayed for;
+  // otherwise it's gone completely. Undo puts it back either way.
   const removePoint = useCallback((target, point) => {
-    setPointStatus(target, point.id, 'removed');
-    showToast('Prayer point deleted', () => setPointStatus(target, point.id, 'active'));
-  }, [setPointStatus, showToast]);
+    let index = -1;
+    setData((d) => {
+      const keep = everPrayed({ ...point, closed: today() }, prayedDatesFor(d, target));
+      return editPoints(d, target, (pts) => {
+        index = pts.findIndex((pt) => pt.id === point.id);
+        return keep
+          ? pts.map((pt) => (pt.id === point.id ? { ...pt, status: 'removed', closed: today() } : pt))
+          : pts.filter((pt) => pt.id !== point.id);
+      });
+    });
+    showToast('Prayer point deleted', () => setData((d) => editPoints(d, target, (pts) => {
+      if (pts.some((pt) => pt.id === point.id)) return pts.map((pt) => (pt.id === point.id ? { ...pt, status: 'active', closed: null } : pt));
+      const next = [...pts];
+      next.splice(index < 0 ? next.length : index, 0, { ...point, status: 'active', closed: null });
+      return next;
+    })));
+  }, [showToast]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const answerPoint = useCallback((target, point) => {
     setPointStatus(target, point.id, 'answered');

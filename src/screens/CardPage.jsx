@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../store.jsx';
 import {
   cardMembers, cardName, cardKind, personName, isOrg, lastPrayed, agoText, daysBetween,
-  formatShortDate, formatMonthYear,
+  formatShortDate, formatMonthYear, everPrayed,
 } from '../model.js';
 import { TopBar, PriorityPill } from '../components/ui.jsx';
 import { isEveryDay } from '../scheduler.js';
@@ -44,7 +44,8 @@ export default function CardPage({ nav, cardId, from }) {
   ];
   const current = allPoints.filter((pt) => pt.status === 'active');
   const answered = allPoints.filter((pt) => pt.status === 'answered').sort((a, b) => (a.closed < b.closed ? 1 : -1));
-  const past = allPoints.filter((pt) => pt.status === 'removed').sort((a, b) => (a.closed < b.closed ? 1 : -1));
+  const prayedDates = [...(card.prayed || []), ...members.flatMap((p) => p.prayed || [])];
+  const past = allPoints.filter((pt) => pt.status === 'removed' && everPrayed(pt, prayedDates)).sort((a, b) => (a.closed < b.closed ? 1 : -1));
 
   const prayed = card.prayed || [];
   const prayedSet = new Set(prayed);
