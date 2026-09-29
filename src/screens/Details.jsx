@@ -228,11 +228,11 @@ function AddPerson({ card, onDone }) {
         <span style={{ fontWeight: 600 }}>Add someone</span>
         <button className="icon-btn" style={{ width: 36, height: 36 }} onClick={onDone} aria-label="Cancel"><Close size={18} /></button>
       </div>
-      {solo && <label className="field">Name for the new group<input className="input" style={{ background: '#fff' }} value={groupName} onChange={(e) => setGroupName(e.target.value)} placeholder="The Mitchell family" /></label>}
+      {solo && <label className="field">Name for the new group<input className="input" value={groupName} onChange={(e) => setGroupName(e.target.value)} placeholder="The Mitchell family" /></label>}
       <span className="label">Someone new</span>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-        <input className="input" style={{ background: '#fff' }} placeholder="First name" aria-label="First name" value={first} onChange={(e) => setFirst(e.target.value)} />
-        <input className="input" style={{ background: '#fff' }} placeholder="Last name" aria-label="Last name" value={last} onChange={(e) => setLast(e.target.value)} />
+        <input className="input" placeholder="First name" aria-label="First name" value={first} onChange={(e) => setFirst(e.target.value)} />
+        <input className="input" placeholder="Last name" aria-label="Last name" value={last} onChange={(e) => setLast(e.target.value)} />
       </div>
       <div className="spread">
         <span>Child (shares one tick box)</span>
@@ -241,7 +241,7 @@ function AddPerson({ card, onDone }) {
       <button className="btn accent small" disabled={!first.trim()} style={{ opacity: first.trim() ? 1 : 0.5 }}
         onClick={() => first.trim() && commit({ newMembers: [{ firstName: first, lastName: last, isChild: child }] })}>Add {first.trim() || 'person'}</button>
       <span className="label" style={{ marginTop: 6 }}>Or someone already in the app</span>
-      <input className="input" style={{ background: '#fff' }} placeholder="Search" aria-label="Search people" value={query} onChange={(e) => setQuery(e.target.value)} />
+      <input className="input" placeholder="Search" aria-label="Search people" value={query} onChange={(e) => setQuery(e.target.value)} />
       {candidates.map((p) => (
         <button key={p.id} className="spread" style={{ minHeight: 44 }} onClick={() => commit({ existingIds: [p.id] })}>
           <span>{personName(p)}</span><span className="tiny sub">{whereIs(p)} · add</span>

@@ -11,7 +11,8 @@
   --acc: #D9608F; --ring: #FFFFFF; --glass: rgba(40,24,50,.28);
   --text: #FFFFFF; --sub: rgba(255,255,255,.84); --muted: rgba(255,255,255,.64);
   --line: rgba(255,255,255,.16); --soft: rgba(255,255,255,.14); --panel: var(--glass);
-  --field: rgba(255,255,255,.14); --btn: #FFFFFF; --btn-ink: #2A2140; --link: #FFFFFF;
+  /* Text boxes are frosted white with dark text everywhere, like the cards. */
+  --field: rgba(255,255,255,.7); --field-text: #231B33; --field-ph: #8F8199; --btn: #FFFFFF; --btn-ink: #2A2140; --link: #FFFFFF;
   --danger: #FFB4A8; --green: #27C79A; --warn-bg: rgba(255,200,90,.24); --warn-ink: #FFF3D6;
   --high: #FF6A45; --med: #8F7BFF; --low: #27C79A; --occ: #4AA3F0;
   --dot-ring: rgba(255,255,255,.6); --tick: rgba(255,255,255,.78);
@@ -70,6 +71,7 @@ button:disabled { cursor: default; }
 a { color: inherit; text-decoration: none; }
 input, textarea { outline: none; }
 input::placeholder, textarea::placeholder { color: var(--muted); }
+.input::placeholder { color: var(--field-ph); }
 :focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 /* Text boxes already show a coloured border when active; no extra outline. */
 input:focus-visible, textarea:focus-visible, select:focus-visible, [contenteditable]:focus-visible { outline: none; }
@@ -172,7 +174,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, [contentedita
 
 /* Fields */
 .field { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--sub); }
-.input { height: 46px; border-radius: 12px; border: 1px solid transparent; background: var(--field); color: var(--text); padding: 0 12px; font-size: 16px; width: 100%; min-width: 0; }
+.input { height: 46px; border-radius: 12px; border: 1px solid transparent; background: var(--field); color: var(--field-text); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); padding: 0 12px; font-size: 16px; width: 100%; min-width: 0; }
 .input:focus { border-color: var(--acc); }
 textarea.input { height: auto; min-height: 46px; padding: 12px; resize: none; line-height: 1.4; }
 select.input { appearance: none; }
@@ -408,3 +410,6 @@ select.input { appearance: none; }
 .scroller.up.more:has(.pinned) {
   -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--top-gap), #000 calc(100% - 44px), transparent);
   mask-image: linear-gradient(to bottom, transparent, #000 var(--top-gap), #000 calc(100% - 44px), transparent); }
+
+/* The big name box on the welcome screen keeps its own see-through look. */
+.input.feature::placeholder { color: rgba(255,255,255,.55); }

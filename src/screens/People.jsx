@@ -128,9 +128,9 @@ export default function People({ nav }) {
           <SortMenu value={sort} onChange={(v) => setSetting('peopleSort', v)} />
         </span>
       </div>
-      <label className="row surface" style={{ padding: '0 14px', height: 46, borderRadius: 14, color: 'var(--muted)', gap: 8 }}>
+      <label className="row input" style={{ padding: '0 14px', borderRadius: 14, color: 'var(--field-ph)', gap: 8 }}>
         <Search />
-        <input className="grow" style={{ border: 0, background: 'transparent', fontSize: 16, color: 'var(--text)' }} placeholder="Search names, groups, organisations"
+        <input className="grow" style={{ border: 0, background: 'transparent', fontSize: 16, color: 'var(--field-text)', outline: 'none' }} placeholder="Search names, groups, organisations"
           aria-label="Search" value={query} onChange={(e) => setQuery(e.target.value)} />
       </label>
       <div className="seg on-page" role="group" aria-label="Show">

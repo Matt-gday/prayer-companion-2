@@ -227,7 +227,7 @@ export default function AddFlow({ nav, from }) {
           </div>
         ))}
         <div className="row" style={{ gap: 8, padding: '8px 0' }}>
-          <input className="input" style={{ background: '#fff' }} placeholder={points.length ? 'Add another' : 'Wisdom in the new job'} aria-label="Prayer point"
+          <input className="input" placeholder={points.length ? 'Add another' : 'Wisdom in the new job'} aria-label="Prayer point"
             value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') addPoint(); }} />
           <button className="btn accent" style={{ width: 46, height: 46, padding: 0, borderRadius: 12, flexShrink: 0 }} onClick={addPoint} aria-label="Add prayer point"><Plus size={18} /></button>
         </div>
