@@ -68,6 +68,25 @@ const sunGlow = (quiet) => (quiet
   ? 'radial-gradient(circle 240px at 50% calc(114% - 170px), rgba(255,253,240,.5) 0%, rgba(255,241,190,.5) 14%, rgba(255,217,138,.45) 24%, rgba(255,196,110,.28) 38%, rgba(255,170,110,.09) 55%, rgba(255,170,110,0) 70%)'
   : 'radial-gradient(circle 240px at 50% calc(96% - 170px), #FFFDF0 0%, #FFF1BE 14%, #FFD98A 24%, rgba(255,196,110,.55) 38%, rgba(255,170,110,.18) 55%, rgba(255,170,110,0) 70%)');
 
+// An iPhone home-screen app only reads the colour behind the clock when it
+// opens. If the sky's top colour has changed since then, the app reloads
+// quietly at a calm moment (leaving Settings, finishing the welcome, or
+// coming back to Home) so the top blends again.
+let launchColour = null;
+let currentColour = null;
+const topIsStale = () => !!launchColour && currentColour !== launchColour;
+const reloadTo = (screen) => {
+  try { sessionStorage.setItem('pc2_after_reload', JSON.stringify(screen)); } catch { /* ignore */ }
+  location.reload();
+};
+const screenAfterReload = () => {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem('pc2_after_reload') || 'null');
+    sessionStorage.removeItem('pc2_after_reload');
+    return saved && saved.name ? saved : null;
+  } catch { return null; }
+};
+
 function useSky(settings, now, quiet) {
   const key = currentSky(settings, now);
   const sky = SKIES[key];
@@ -97,6 +116,8 @@ function useSky(settings, now, quiet) {
     // iPhones only notice a new status-bar colour when the tag itself is
     // replaced, not just changed, so swap in a fresh one.
     const colour = settings.onboarded ? sky.top : '#141E46';
+    if (!launchColour) launchColour = colour;
+    currentColour = colour;
     const old = document.querySelector('meta[name="theme-color"]');
     if (!old || old.getAttribute('content') !== colour) {
       const meta = document.createElement('meta');
@@ -142,10 +163,30 @@ export default function App() {
   const store = useStore();
   const { settings, toast, dismissToast } = store;
   const now = useNow();
-  const [screen, setScreen] = useState({ name: 'home' });
+  const [screen, setScreen] = useState(() => screenAfterReload() || { name: 'home' });
   const skyKey = useSky(settings, now, screen.name !== 'home');
 
-  const go = (name, params = {}) => { setScreen({ name, ...params }); scrollToTop(); };
+  const go = (name, params = {}) => {
+    if (screen.name === 'settings' && name !== 'settings' && name !== 'help' && topIsStale()) { reloadTo({ name, ...params }); return; }
+    setScreen({ name, ...params });
+    scrollToTop();
+  };
+
+  // Finishing the welcome changes the top colour from the welcome's navy.
+  useEffect(() => {
+    if (settings.onboarded && topIsStale()) reloadTo({ name: 'home' });
+  }, [settings.onboarded]);
+
+  // The time-of-day sky may have moved on while the app was in the background.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible' && screen.name === 'home') {
+        setTimeout(() => { if (topIsStale()) reloadTo({ name: 'home' }); }, 300);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [screen.name]);
 
   if (!settings.onboarded) {
     return <Scroller className="onb"><Welcome skyKey={skyKey} now={now} /></Scroller>;
