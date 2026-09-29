@@ -79,7 +79,7 @@ export function ListPage({ nav, listId }) {
   const [ask, confirmNode] = useConfirm();
   const [editing, setEditing] = useState(false);
   const [open, setOpen] = useState(null);
-  const [sheet, setSheet] = useState(null); // 'week' | 'share' | 'history'
+  const [sheet, setSheet] = useState(null); // 'week' | 'share'
   const [adding, setAdding] = useState('');
   const [drag, setDrag] = useState(null);
   const list = lists.find((l) => l.id === listId);
@@ -175,14 +175,13 @@ export function ListPage({ nav, listId }) {
             : <span className="small" style={{ textAlign: 'center', opacity: 0.85 }}>Add some prayer points, then you can pray through them.</span>}
           <button className="btn secondary" onClick={() => setSheet('week')}>Start a new week</button>
           {(list.history || []).length > 0 && (
-            <button className="small" style={{ minHeight: 40, opacity: 0.85 }} onClick={() => setSheet('history')}>Past weeks ({list.history.length})</button>
+            <button className="small" style={{ minHeight: 40, opacity: 0.85 }} onClick={() => nav.go('listhistory', { listId: list.id })}>Past weeks ({list.history.length})</button>
           )}
         </>
       )}
 
       {sheet === 'week' && <NewWeekSheet list={list} onClose={() => setSheet(null)} />}
-      {sheet === 'share' && <ShareSheet list={list} onClose={() => setSheet(null)} />}
-      {sheet === 'history' && <HistorySheet list={list} onClose={() => setSheet(null)} />}
+      {sheet === 'share' && <ShareSheet title="Share this week’s requests" text={shareText(list.name, list.week.start, list.people.map((p) => ({ name: p.name, requests: p.requests.map((x) => x.text) })))} onClose={() => setSheet(null)} />}
       {confirmNode}
     </div>
   );
@@ -267,15 +266,15 @@ function NewWeekSheet({ list, onClose }) {
   );
 }
 
-const shareText = (list) => [
-  `${list.name} · ${weekLabel(list.week.start).replace('Week', 'week')}`,
+// people: [{ name, requests: [text] }]
+const shareText = (listName, start, people) => [
+  `${listName} · ${weekLabel(start).replace('Week', 'week')}`,
   '',
-  ...list.people.filter((p) => p.requests.length).map((p) => `${p.name}: ${p.requests.map((r) => r.text).join('; ')}`),
+  ...people.filter((p) => p.requests.length).map((p) => `${p.name}: ${p.requests.join('; ')}`),
 ].join('\n');
 
-function ShareSheet({ list, onClose }) {
+function ShareSheet({ title, text, onClose }) {
   const { showToast } = useStore();
-  const text = shareText(list);
   const copy = async () => {
     try { await navigator.clipboard.writeText(text); showToast('Copied'); onClose(); } catch { showToast('Couldn’t copy. Select the text and copy it instead.'); }
   };
@@ -284,7 +283,7 @@ function ShareSheet({ list, onClose }) {
   };
   return (
     <Sheet onClose={onClose} label="Share requests">
-      <span style={{ fontSize: 18, fontWeight: 600 }}>Share this week’s requests</span>
+      <span style={{ fontSize: 18, fontWeight: 600 }}>{title}</span>
       <div style={{ background: 'var(--soft)', borderRadius: 14, padding: 14, whiteSpace: 'pre-line', lineHeight: 1.5, fontSize: 14, userSelect: 'text' }}>{text}</div>
       <div style={{ display: 'grid', gridTemplateColumns: navigator.share ? 'repeat(2, minmax(0, 1fr))' : '1fr', gap: 8 }}>
         <button className="btn soft" onClick={copy}>Copy</button>
@@ -294,27 +293,48 @@ function ShareSheet({ list, onClose }) {
   );
 }
 
-function HistorySheet({ list, onClose }) {
+// Every past week of a list, newest first, each one shareable.
+export function ListHistory({ nav, listId }) {
+  const { lists } = useStore();
+  const [sharing, setSharing] = useState(null);
+  const list = lists.find((l) => l.id === listId);
+  if (!list) return null;
   const weeks = [...(list.history || [])].reverse();
   return (
-    <Sheet onClose={onClose} label="Past weeks">
-      <div className="spread"><span style={{ fontSize: 18, fontWeight: 600 }}>Past weeks</span><button className="link" onClick={onClose}>Done</button></div>
+    <div className="screen">
+      <TopBar onBack={() => nav.go('list', { listId })} backLabel={list.name} />
+      <div className="stack" style={{ gap: 2, padding: '0 4px' }}>
+        <span className="small" style={{ opacity: 0.9 }}>Past weeks of</span>
+        <h1 className="title" style={{ lineHeight: 1.05 }}>{list.name}</h1>
+      </div>
+      {weeks.length === 0 && <div className="surface empty">No past weeks yet. They’re saved each time you start a new week.</div>}
       {weeks.map((w) => {
-        const prayed = w.people ? w.people.length : 0;
+        const people = (w.people || []).filter((p) => p.requests.length);
         const summary = w.points != null
           ? `${w.prayedPoints} of ${w.points} point${w.points === 1 ? '' : 's'} prayed for`
-          : `${Object.values(w.ticks || {}).filter(Boolean).length} of ${prayed} prayed for`;
+          : `${Object.values(w.ticks || {}).filter(Boolean).length} of ${(w.people || []).length} prayed for`;
         return (
-          <div key={w.start + w.end} className="stack" style={{ gap: 6, borderBottom: '1px solid var(--line)', paddingBottom: 12 }}>
-            <b>{weekLabel(w.start)}</b>
-            <span className="tiny sub">{summary} · ended {formatShortDate(w.end)}</span>
-            {(w.people || []).filter((p) => p.requests.length).map((p) => (
-              <span key={p.name} className="small"><b>{p.name}:</b> {p.requests.join('; ')}</span>
+          <div key={w.start + w.end} className="surface cream stack" style={{ gap: 8 }}>
+            <div className="spread" style={{ alignItems: 'flex-start' }}>
+              <span className="stack" style={{ gap: 2 }}>
+                <b style={{ fontSize: 16 }}>{weekLabel(w.start)}</b>
+                <span className="tiny sub">{summary} · ended {formatShortDate(w.end)}</span>
+              </span>
+              {people.length > 0 && (
+                <button className="chip-btn" style={{ flexShrink: 0 }} onClick={() => setSharing(w)}><Upload size={14} />Send</button>
+              )}
+            </div>
+            {people.length === 0 && <span className="small sub">No prayer points that week.</span>}
+            {people.map((p) => (
+              <span key={p.name} className="small" style={{ lineHeight: 1.45 }}><b>{p.name}:</b> {p.requests.join('; ')}</span>
             ))}
           </div>
         );
       })}
-    </Sheet>
+      {sharing && (
+        <ShareSheet title={`Send ${weekLabel(sharing.start).replace('Week', 'week')}`}
+          text={shareText(list.name, sharing.start, sharing.people || [])} onClose={() => setSharing(null)} />
+      )}
+    </div>
   );
 }
-

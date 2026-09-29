@@ -12,7 +12,7 @@ import Welcome from './screens/Welcome.jsx';
 import Details from './screens/Details.jsx';
 import PrayerPoints from './screens/PrayerPoints.jsx';
 import AddFlow from './screens/AddFlow.jsx';
-import { ListsHome, ListPage, ListPray } from './screens/Lists.jsx';
+import { ListsHome, ListPage, ListPray, ListHistory } from './screens/Lists.jsx';
 import Sparkles from './components/Sparkles.jsx';
 
 // Re-check the clock every minute and when the app comes back to the front,
@@ -155,6 +155,7 @@ export default function App() {
     case 'points': content = <PrayerPoints nav={nav} cardId={screen.cardId} from={screen.from} cardFrom={screen.cardFrom} />; break;
     case 'add': content = <AddFlow nav={nav} from={screen.from} />; break;
     case 'lists': content = <ListsHome nav={nav} />; break;
+    case 'listhistory': content = <ListHistory nav={nav} listId={screen.listId} />; break;
     case 'listpray': content = <ListPray nav={nav} listId={screen.listId} />; break;
     case 'list': content = <ListPage nav={nav} listId={screen.listId} />; break;
     default: content = <Home nav={nav} />;
