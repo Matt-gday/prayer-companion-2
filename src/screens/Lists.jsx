@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useStore } from '../store.jsx';
-import { formatShortDate } from '../model.js';
+import { formatShortDate, today } from '../model.js';
 import { TopBar, Sheet, Tick, useConfirm, AutoText } from '../components/ui.jsx';
-import { Back, Plus, List, Chevron, Grip, Trash, Upload } from '../components/Icons.jsx';
+import { Back, Plus, List, Chevron, Grip, Trash, Upload, Check } from '../components/Icons.jsx';
 
 const weekLabel = (iso) => `Week of ${new Date(`${iso}T12:00:00`).toLocaleDateString('en-AU', { day: 'numeric', month: 'long' })}`;
 const COLOURS = ['var(--high)', 'var(--low)', 'var(--med)', 'var(--occ)'];
@@ -21,7 +21,6 @@ export function ListsHome({ nav }) {
         For your growth group, a team, or anyone you pray for together. Separate from your daily cards, and everyone is on one screen.
       </p>
       {lists.map((l, i) => {
-        const done = l.people.filter((p) => l.week.ticks[p.id]).length;
         const reqs = l.people.reduce((n, p) => n + p.requests.length, 0);
         return (
           <button key={l.id} className="surface row" style={{ textAlign: 'left', gap: 14, padding: 16 }} onClick={() => nav.go('list', { listId: l.id })}>
@@ -29,7 +28,7 @@ export function ListsHome({ nav }) {
             <span className="grow stack" style={{ gap: 2 }}>
               <span style={{ fontSize: 16, fontWeight: 600 }}>{l.name}</span>
               <span className="tiny sub">{l.people.length} {l.people.length === 1 ? 'person' : 'people'} · {reqs} request{reqs === 1 ? '' : 's'}</span>
-              <span className="tiny" style={{ opacity: 0.7 }}>This week · {done ? `${done} of ${l.people.length} prayed for` : 'not started'}</span>
+              <span className="tiny" style={{ opacity: 0.7 }}>This week · {l.week.prayedAt ? `prayed ${dayName(l.week.prayedAt)}` : 'not prayed yet'}</span>
             </span>
             <span style={{ opacity: 0.7 }}><Chevron /></span>
           </button>
@@ -66,12 +65,20 @@ function NewListSheet({ onClose, onCreate }) {
   );
 }
 
-// One list: everyone on a single screen, tick as you pray.
+// Points on the list this week, and how many have been checked.
+const weekCounts = (list) => {
+  const reqs = list.people.flatMap((p) => p.requests);
+  return { total: reqs.length, prayed: reqs.filter((r) => list.week.ticks[r.id]).length, people: list.people.filter((p) => p.requests.length).length };
+};
+const dayName = (iso) => (iso === today() ? 'today' : new Date(`${iso}T12:00:00`).toLocaleDateString('en-AU', { weekday: 'long' }));
+
+// One list: tap a person to open their points in place. "Pray" goes to the
+// pray page, where each point gets a check.
 export function ListPage({ nav, listId }) {
-  const { lists, toggleListTick, addListPerson, renameList, deleteList, removeListPerson, moveListPerson } = useStore();
+  const { lists, addListPerson, renameList, deleteList, removeListPerson, moveListPerson, renameListPerson } = useStore();
   const [ask, confirmNode] = useConfirm();
   const [editing, setEditing] = useState(false);
-  const [person, setPerson] = useState(null);
+  const [open, setOpen] = useState(null);
   const [sheet, setSheet] = useState(null); // 'week' | 'share' | 'history'
   const [adding, setAdding] = useState('');
   const [drag, setDrag] = useState(null);
@@ -80,7 +87,7 @@ export function ListPage({ nav, listId }) {
   if (!list) {
     return <div className="screen"><TopBar onBack={() => nav.go('lists')} backLabel="Lists" /><div className="surface empty">This list has been deleted.</div></div>;
   }
-  const done = list.people.filter((p) => list.week.ticks[p.id]).length;
+  const counts = weekCounts(list);
 
   const onGripDown = (e, id, index) => {
     const row = e.currentTarget.closest('.list-person');
@@ -100,53 +107,50 @@ export function ListPage({ nav, listId }) {
         <button className="back" onClick={() => nav.go('lists')}><Back />Lists</button>
         <span className="row" style={{ gap: 6 }}>
           {!editing && <button className="icon-btn glass" style={{ width: 40, height: 40 }} aria-label="Share this week’s requests" onClick={() => setSheet('share')}><Upload size={18} /></button>}
-          <button className="link" style={{ color: '#fff', padding: '0 6px' }} onClick={() => setEditing(!editing)}>{editing ? 'Done' : 'Edit'}</button>
+          <button className="link" style={{ color: '#fff', padding: '0 6px' }} onClick={() => { setEditing(!editing); setOpen(null); }}>{editing ? 'Done' : 'Edit'}</button>
         </span>
       </div>
 
       {editing ? (
         <input className="input" style={{ fontSize: 22, fontWeight: 600, height: 52 }} value={list.name} aria-label="List name" onChange={(e) => renameList(list.id, e.target.value)} />
       ) : (
-        <div className="spread" style={{ alignItems: 'baseline', padding: '0 4px' }}>
-          <h1 className="title" style={{ fontSize: 32 }}>{list.name}</h1>
-          <span className="small" style={{ opacity: 0.9 }}>{done} of {list.people.length}</span>
-        </div>
+        <h1 className="title" style={{ fontSize: 32, padding: '0 4px' }}>{list.name}</h1>
       )}
       <span className="small" style={{ opacity: 0.8, padding: '0 4px', marginTop: -6 }}>{weekLabel(list.week.start)}</span>
 
       <div className="list cream" style={{ padding: '2px 14px' }}>
         {list.people.length === 0 && <div className="empty" style={{ padding: 20 }}>Add the people in this group below.</div>}
-        {list.people.map((p, i) => {
-          const ticked = !!list.week.ticks[p.id];
-          return (
-            <div key={p.id} className={`list-person ${ticked && !editing ? 'done' : ''}`}
-              style={drag?.id === p.id ? { transform: `translateY(${drag.dy}px)`, background: 'rgba(255,255,255,.95)', position: 'relative', zIndex: 2, boxShadow: '0 6px 18px rgba(0,0,0,.15)', borderRadius: 10 } : undefined}>
-              {editing ? (
+        {list.people.map((p, i) => (
+          <div key={p.id} className="list-person"
+            style={drag?.id === p.id ? { transform: `translateY(${drag.dy}px)`, background: 'rgba(255,255,255,.95)', position: 'relative', zIndex: 2, boxShadow: '0 6px 18px rgba(0,0,0,.15)', borderRadius: 10 } : undefined}>
+            {editing ? (
+              <>
                 <span className="grip" role="button" aria-label={`Drag to move ${p.name}`}
                   onPointerDown={(e) => onGripDown(e, p.id, i)} onPointerMove={(e) => drag && setDrag({ ...drag, dy: e.clientY - drag.startY })}
                   onPointerUp={onGripUp} onPointerCancel={() => setDrag(null)}><Grip /></span>
-              ) : (
-                <button onClick={() => toggleListTick(list.id, p.id)} aria-label={ticked ? `Untick ${p.name}` : `Tick ${p.name}`} style={{ paddingTop: 1 }}>
-                  <Tick on={ticked} small />
-                </button>
-              )}
-              <button className="grow who" style={{ textAlign: 'left' }} onClick={() => setPerson(p.id)}>
-                <div style={{ fontWeight: 600, fontSize: 15.5 }}>{p.name}</div>
-                {p.requests.length
-                  ? p.requests.map((r) => <div key={r.id} className="list-req">{r.text}</div>)
-                  : <div className="list-req" style={{ opacity: 0.7 }}>No requests yet · tap to add</div>}
-              </button>
-              {editing && (
+                <input className="input grow" style={{ height: 40 }} value={p.name} aria-label="Name" onChange={(e) => renameListPerson(list.id, p.id, e.target.value)} />
                 <button className="icon-btn" style={{ width: 36, height: 36, color: 'var(--muted)' }} aria-label={`Remove ${p.name}`}
                   onClick={() => ask({ title: `Remove ${p.name}?`, message: 'They’ll be taken off this list with their requests.', confirmLabel: 'Remove', danger: true, onConfirm: () => removeListPerson(list.id, p.id) })}>
                   <Trash />
                 </button>
-              )}
-            </div>
-          );
-        })}
+              </>
+            ) : open === p.id ? (
+              <PersonPoints list={list} person={p} onClose={() => setOpen(null)} />
+            ) : (
+              <button className="grow who" style={{ textAlign: 'left' }} onClick={() => setOpen(p.id)} aria-expanded="false">
+                <div className="spread">
+                  <span style={{ fontWeight: 600, fontSize: 15.5 }}>{p.name}</span>
+                  <span className="muted"><Chevron size={14} style={{ transform: 'rotate(90deg)' }} /></span>
+                </div>
+                {p.requests.length
+                  ? <div className="list-req">{p.requests.map((r) => r.text).join(' · ')}</div>
+                  : <div className="list-req" style={{ opacity: 0.7 }}>Nothing this week · tap to add</div>}
+              </button>
+            )}
+          </div>
+        ))}
         <div className="row" style={{ gap: 8, padding: '10px 0' }}>
-          <input className="input" style={{ background: '#fff' }} placeholder="Add a person" aria-label="Add a person" value={adding}
+          <input className="input" placeholder="Add a person" aria-label="Add a person" value={adding}
             onChange={(e) => setAdding(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { addListPerson(list.id, adding); setAdding(''); } }} />
           <button className="btn accent" style={{ width: 46, height: 46, padding: 0, borderRadius: 12, flexShrink: 0 }} aria-label="Add person"
             onClick={() => { addListPerson(list.id, adding); setAdding(''); }}><Plus size={18} /></button>
@@ -160,6 +164,15 @@ export function ListPage({ nav, listId }) {
         })}>Delete this list</button>
       ) : (
         <>
+          {list.week.prayedAt && (
+            <div className="row small" style={{ justifyContent: 'center', gap: 8, fontWeight: 600 }}>
+              <span style={{ width: 20, height: 20, borderRadius: 10, background: '#fff', color: 'var(--acc)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Check size={13} /></span>
+              Prayed {dayName(list.week.prayedAt)} · {counts.prayed} of {counts.total} point{counts.total === 1 ? '' : 's'}
+            </div>
+          )}
+          {counts.total > 0
+            ? <button className="btn white" onClick={() => nav.go('listpray', { listId: list.id })}>Pray</button>
+            : <span className="small" style={{ textAlign: 'center', opacity: 0.85 }}>Add some prayer points, then you can pray through them.</span>}
           <button className="btn secondary" onClick={() => setSheet('week')}>Start a new week</button>
           {(list.history || []).length > 0 && (
             <button className="small" style={{ minHeight: 40, opacity: 0.85 }} onClick={() => setSheet('history')}>Past weeks ({list.history.length})</button>
@@ -167,7 +180,6 @@ export function ListPage({ nav, listId }) {
         </>
       )}
 
-      {person && <PersonSheet list={list} personId={person} onClose={() => setPerson(null)} />}
       {sheet === 'week' && <NewWeekSheet list={list} onClose={() => setSheet(null)} />}
       {sheet === 'share' && <ShareSheet list={list} onClose={() => setSheet(null)} />}
       {sheet === 'history' && <HistorySheet list={list} onClose={() => setSheet(null)} />}
@@ -176,32 +188,61 @@ export function ListPage({ nav, listId }) {
   );
 }
 
-// Tap a person to change their name and this week's requests.
-function PersonSheet({ list, personId, onClose }) {
-  const { addRequest, editRequest, removeRequest, renameListPerson } = useStore();
+// A person's points, opened in place: edit the words, delete, or add more.
+function PersonPoints({ list, person, onClose }) {
+  const { addRequest, editRequest, removeRequest } = useStore();
   const [draft, setDraft] = useState('');
-  const p = list.people.find((x) => x.id === personId);
-  if (!p) return null;
-  const add = () => { addRequest(list.id, p.id, draft); setDraft(''); };
+  const add = () => { addRequest(list.id, person.id, draft); setDraft(''); };
   return (
-    <Sheet onClose={onClose} label={p.name}>
-      <div className="spread"><span style={{ fontSize: 18, fontWeight: 600 }}>{p.name}</span><button className="link" onClick={onClose}>Done</button></div>
-      <label className="field">Name<input className="input" value={p.name} onChange={(e) => renameListPerson(list.id, p.id, e.target.value)} /></label>
-      <span className="label">Requests</span>
-      <div className="stack" style={{ gap: 0 }}>
-        {p.requests.map((r) => (
-          <div key={r.id} className="pt-row">
-            <AutoText value={r.text} onChange={(t) => editRequest(list.id, p.id, r.id, t)} />
-            <button className="icon-btn" style={{ width: 38, height: 38, color: 'var(--muted)' }} aria-label={`Delete "${r.text}"`} onClick={() => removeRequest(list.id, p.id, r.id)}><Trash /></button>
-          </div>
-        ))}
-        <div className="row" style={{ gap: 8, marginTop: 8 }}>
-          <input className="input" autoFocus={!p.requests.length} placeholder="Add a request" aria-label="Add a request" value={draft}
-            onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') add(); }} />
-          <button className="btn accent" style={{ width: 46, height: 46, padding: 0, borderRadius: 12, flexShrink: 0 }} onClick={add} aria-label="Add request"><Plus size={18} /></button>
+    <div className="grow list-open">
+      <button className="spread full" style={{ minHeight: 30 }} onClick={onClose} aria-expanded="true">
+        <span style={{ fontWeight: 600, fontSize: 15.5 }}>{person.name}</span>
+        <span className="muted"><Chevron size={14} style={{ transform: 'rotate(-90deg)' }} /></span>
+      </button>
+      {person.requests.map((r) => (
+        <div key={r.id} className="pt-row">
+          <AutoText value={r.text} onChange={(t) => editRequest(list.id, person.id, r.id, t)} />
+          <button className="icon-btn" style={{ width: 36, height: 36, color: 'var(--muted)' }} aria-label={`Delete "${r.text}"`} onClick={() => removeRequest(list.id, person.id, r.id)}><Trash /></button>
         </div>
+      ))}
+      <div className="row" style={{ gap: 8, marginTop: 8 }}>
+        <input className="input" autoFocus={!person.requests.length} style={{ borderStyle: 'dashed', background: 'transparent' }} placeholder="Add a prayer point" aria-label="Add a prayer point" value={draft}
+          onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') add(); }} />
+        <button className="btn accent" style={{ width: 46, height: 46, padding: 0, borderRadius: 12, flexShrink: 0 }} onClick={add} aria-label="Add prayer point"><Plus size={18} /></button>
       </div>
-    </Sheet>
+    </div>
+  );
+}
+
+// Pray through the list: only people with points, a check beside each point.
+export function ListPray({ nav, listId }) {
+  const { lists, toggleListTick, finishListPrayer } = useStore();
+  const list = lists.find((l) => l.id === listId);
+  if (!list) return null;
+  const counts = weekCounts(list);
+  const back = () => nav.go('list', { listId });
+  return (
+    <div className="screen">
+      <TopBar onBack={back} backLabel={list.name} right={<span className="small" style={{ fontWeight: 600, marginRight: 4 }}><b>{counts.prayed}</b> of {counts.total}</span>} />
+      <div className="stack" style={{ gap: 2, padding: '0 4px' }}>
+        <span className="small" style={{ opacity: 0.9 }}>Praying for</span>
+        <h1 className="title" style={{ lineHeight: 1.05 }}>{list.name}</h1>
+      </div>
+      {list.people.filter((p) => p.requests.length).map((p) => (
+        <div key={p.id} className="surface cream stack" style={{ gap: 0 }}>
+          <span style={{ fontWeight: 600, fontSize: 16, marginBottom: 2 }}>{p.name}</span>
+          {p.requests.map((r) => (
+            <button key={r.id} className="member" style={{ borderBottom: 0, padding: '8px 0' }} onClick={() => toggleListTick(list.id, r.id)}
+              aria-pressed={!!list.week.ticks[r.id]}>
+              <Tick on={!!list.week.ticks[r.id]} small />
+              <span className="read" style={{ fontSize: 'var(--point-size)', lineHeight: 1.4, opacity: list.week.ticks[r.id] ? 0.6 : 1 }}>{r.text}</span>
+            </button>
+          ))}
+        </div>
+      ))}
+      <div style={{ flex: 1 }} />
+      <button className="btn white" onClick={() => { finishListPrayer(list.id); back(); }}><Check size={18} />Finished</button>
+    </div>
   );
 }
 
@@ -217,7 +258,7 @@ function NewWeekSheet({ list, onClose }) {
   return (
     <Sheet onClose={onClose} label="Start a new week">
       <span style={{ fontSize: 18, fontWeight: 600 }}>Start a new week?</span>
-      <span className="sub" style={{ lineHeight: 1.45 }}>Ticks are cleared. This week is kept in the list’s past weeks.</span>
+      <span className="sub" style={{ lineHeight: 1.45 }}>Checks are cleared. This week is kept in the list’s past weeks.</span>
       <Choice on={keep} onClick={() => setKeep(true)} title="Keep all requests" text="Update them as people share" />
       <Choice on={!keep} onClick={() => setKeep(false)} title="Start with a clean slate" text="Clear every request" />
       <button className="btn primary" onClick={() => { newWeek(list.id, keep); onClose(); }}>Start the new week</button>
@@ -260,10 +301,13 @@ function HistorySheet({ list, onClose }) {
       <div className="spread"><span style={{ fontSize: 18, fontWeight: 600 }}>Past weeks</span><button className="link" onClick={onClose}>Done</button></div>
       {weeks.map((w) => {
         const prayed = w.people ? w.people.length : 0;
+        const summary = w.points != null
+          ? `${w.prayedPoints} of ${w.points} point${w.points === 1 ? '' : 's'} prayed for`
+          : `${Object.values(w.ticks || {}).filter(Boolean).length} of ${prayed} prayed for`;
         return (
           <div key={w.start + w.end} className="stack" style={{ gap: 6, borderBottom: '1px solid var(--line)', paddingBottom: 12 }}>
             <b>{weekLabel(w.start)}</b>
-            <span className="tiny sub">{Object.values(w.ticks || {}).filter(Boolean).length} of {prayed} prayed for · ended {formatShortDate(w.end)}</span>
+            <span className="tiny sub">{summary} · ended {formatShortDate(w.end)}</span>
             {(w.people || []).filter((p) => p.requests.length).map((p) => (
               <span key={p.name} className="small"><b>{p.name}:</b> {p.requests.join('; ')}</span>
             ))}

@@ -437,13 +437,19 @@ export function StoreProvider({ children }) {
     editListPerson(listId, personId, (p) => ({ ...p, requests: p.requests.map((r) => (r.id === reqId ? { ...r, text } : r)) })), [setData]); // eslint-disable-line react-hooks/exhaustive-deps
   const removeRequest = useCallback((listId, personId, reqId) =>
     editListPerson(listId, personId, (p) => ({ ...p, requests: p.requests.filter((r) => r.id !== reqId) })), [setData]); // eslint-disable-line react-hooks/exhaustive-deps
-  const toggleListTick = useCallback((listId, personId) => editList(listId, (l) => ({
-    ...l, week: { ...l.week, ticks: { ...l.week.ticks, [personId]: !l.week.ticks[personId] } },
+  // Checks are per prayer point (by its id).
+  const toggleListTick = useCallback((listId, key) => editList(listId, (l) => ({
+    ...l, week: { ...l.week, ticks: { ...l.week.ticks, [key]: !l.week.ticks[key] } },
+  })), [setData]); // eslint-disable-line react-hooks/exhaustive-deps
+  const finishListPrayer = useCallback((listId) => editList(listId, (l) => ({
+    ...l, week: { ...l.week, prayedAt: today() },
   })), [setData]); // eslint-disable-line react-hooks/exhaustive-deps
   const newWeek = useCallback((listId, keepRequests) => editList(listId, (l) => ({
     ...l,
     history: [...(l.history || []), {
-      start: l.week.start, end: today(), ticks: l.week.ticks,
+      start: l.week.start, end: today(), ticks: l.week.ticks, prayedAt: l.week.prayedAt || null,
+      points: l.people.reduce((n, p) => n + p.requests.length, 0),
+      prayedPoints: l.people.reduce((n, p) => n + p.requests.filter((r) => l.week.ticks[r.id]).length, 0),
       people: l.people.map((p) => ({ name: p.name, requests: p.requests.map((r) => r.text) })),
     }],
     week: { start: today(), ticks: {} },
@@ -495,7 +501,7 @@ export function StoreProvider({ children }) {
   const value = useMemo(() => ({
     people, cards, lists, settings, session: activeSession, toast, date,
     addList, renameList, deleteList, addListPerson, renameListPerson, removeListPerson, moveListPerson,
-    addRequest, editRequest, removeRequest, toggleListTick, newWeek,
+    addRequest, editRequest, removeRequest, toggleListTick, finishListPrayer, newWeek,
     setSetting, setDemo, setLimit, showToast, dismissToast: () => setToast(null),
     updatePerson, updateCard, addPoint, setPointText, setPointStatus, movePoint, removePoint, answerPoint,
     addSolo, addGroup, addToGroup, makeGroupFrom, removeFromGroup, splitGroup, setArchived, deleteCard, deletePerson,
@@ -504,7 +510,7 @@ export function StoreProvider({ children }) {
     exportBackup, readBackup, restoreBackup,
   }), [people, cards, lists, settings, activeSession,
     addList, renameList, deleteList, addListPerson, renameListPerson, removeListPerson, moveListPerson,
-    addRequest, editRequest, removeRequest, toggleListTick, newWeek, toast, date, setSetting, setDemo, setLimit, showToast,
+    addRequest, editRequest, removeRequest, toggleListTick, finishListPrayer, newWeek, toast, date, setSetting, setDemo, setLimit, showToast,
     updatePerson, updateCard, addPoint, setPointText, setPointStatus, movePoint, removePoint, answerPoint,
     addSolo, addGroup, addToGroup, makeGroupFrom, removeFromGroup, splitGroup, setArchived, deleteCard, deletePerson,
     startToday, setIndex, setView, toggleTick, setCardPrayed, keepPraying, addExtraCard, exportBackup, readBackup, restoreBackup]);
