@@ -340,7 +340,7 @@ select.input { appearance: none; }
 .size-slider input::-moz-range-thumb { width: 26px; height: 26px; border: 0; border-radius: 13px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
 
 /* Pinned top bar */
-.pinned { position: sticky; top: calc(env(safe-area-inset-top) + 6px); z-index: 5; border-radius: 16px; padding: 0 8px 0 4px; background: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.pinned { position: sticky; top: calc(env(safe-area-inset-top) + 9px); z-index: 5; border-radius: 16px; padding: 0 8px 0 4px; background: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 
 /* Home tiles (three) */
 .home-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
