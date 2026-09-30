@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useStore } from './store.jsx';
-import { SKIES, DEFAULT_GLASS, EDGE, edgeFade, currentSky } from './skies.js';
+import { SKIES, DEFAULT_GLASS, currentSky } from './skies.js';
 import { scrollToTop } from './scroll.js';
 import Home from './screens/Home.jsx';
 import Pray from './screens/Pray.jsx';
@@ -96,7 +96,7 @@ function useSky(settings, now, quiet) {
     setScreenHeight();
     let layers = [ONBOARDING_BG];
     if (settings.onboarded) {
-      layers = [edgeFade(), sky.bg];
+      layers = [sky.bg];
       if (sky.sun) layers.unshift(sunGlow(quiet));
       if (sky.stars) layers.unshift(...STARS);
     }
@@ -104,7 +104,7 @@ function useSky(settings, now, quiet) {
     // background colour, so that's the sky's top colour. The two edge strips
     // (see index.html) tint the top and bottom edges separately, so the
     // bottom edge gets the sky's bottom colour rather than the top one.
-    const top = EDGE;
+    const top = settings.onboarded ? sky.top : '#141E46';
     html.style.backgroundColor = top;
     html.style.setProperty('--sky-top', top);
     html.style.setProperty('--sky-bottom', bottomColour(settings.onboarded ? sky.bg : ONBOARDING_BG));
@@ -121,7 +121,7 @@ function useSky(settings, now, quiet) {
     html.style.setProperty('--extra', sky.extra || '#7CF0B0');
     // iPhones only notice a new status-bar colour when the tag itself is
     // replaced, not just changed, so swap in a fresh one.
-    const colour = EDGE;
+    const colour = settings.onboarded ? sky.top : '#141E46';
     // The iPhone takes the colour behind the clock from the strip along the
     // top edge. When it changes, hide and re-show the strip so it's noticed.
     if (currentTop && currentTop !== colour) {

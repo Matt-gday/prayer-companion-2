@@ -1,4 +1,4 @@
-import { SKIES, DEFAULT_GLASS, edgeFade } from '../skies.js';
+import { SKIES, DEFAULT_GLASS } from '../skies.js';
 import { Users, List, Download, Next } from './Icons.jsx';
 
 const W = 390;
@@ -20,7 +20,6 @@ export default function HomePreview({ skyKey, name, width = 170 }) {
     <div aria-hidden="true" style={{ width, height: H * scale, borderRadius: 26, overflow: 'hidden', boxShadow: '0 16px 38px rgba(0,0,0,.38)', position: 'relative', flexShrink: 0 }}>
       <div style={{ width: W, height: H, transform: `scale(${scale})`, transformOrigin: 'top left', position: 'absolute', top: 0, left: 0, color: '#fff', fontFamily: "'Inter', system-ui, sans-serif" }}>
         <div style={{ position: 'absolute', inset: 0, background: sky.bg }} />
-        <div style={{ position: 'absolute', inset: 0, background: edgeFade('44px', '60px') }} />
         {sky.stars && <div className="sky-stars" style={{ position: 'absolute', inset: 0 }} />}
         {sky.sun && (
           <>
