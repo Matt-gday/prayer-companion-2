@@ -125,7 +125,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, [contentedita
 .screen > * { flex-shrink: 0; }
 
 .read { font-family: var(--read); }
-.title { font-family: var(--read); font-weight: var(--name-weight); letter-spacing: var(--name-ls); font-size: 34px; line-height: 1.08; }
+.title { font-family: var(--head, var(--read)); font-weight: var(--name-weight); letter-spacing: var(--name-ls); font-size: 34px; line-height: 1.08; }
 .muted { color: var(--muted); }
 .sub { color: var(--sub); }
 .small { font-size: 13px; }
@@ -199,7 +199,7 @@ select.input { appearance: none; }
 /* Prayer card: sky-glass header, cream body */
 .pray-card { flex: 1 1 auto !important; min-height: 0; border-radius: 26px; overflow: hidden; display: flex; flex-direction: column; }
 .pray-head { background: var(--glass); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
-.pray-name { font-family: var(--read); font-weight: var(--name-weight); letter-spacing: var(--name-ls); font-size: var(--name-size); line-height: 1.08; margin-top: 4px; }
+.pray-name { font-family: var(--head, var(--read)); font-weight: var(--name-weight); letter-spacing: var(--name-ls); font-size: var(--name-size); line-height: 1.08; margin-top: 4px; }
 .pray-meta { font-size: 13px; display: flex; flex-direction: column; gap: 3px; }
 .pray-meta .org { font-style: italic; }
 .pray-meta .when { color: var(--muted); display: flex; align-items: center; gap: 5px; font-size: 12.5px; }
@@ -489,10 +489,12 @@ html[data-light] .size-slider input { background: rgba(90,70,50,.18); }
 html[data-light] .size-slider input::-webkit-slider-thumb { background: var(--acc); }
 html[data-light] .size-slider input::-moz-range-thumb { background: var(--acc); }
 html[data-light] .home-tile .ic { background: rgba(90,70,50,.08); }
-/* Classic: the original app's fonts. Open Sans throughout; the Serif / Sans
-   setting picks Georgia or Open Sans for names and prayer points; the Home
-   greeting name uses Oranienbaum, as it did originally. */
-html[data-light] { --ui: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
-html[data-light][data-font='serif'] { --read: Georgia, 'Times New Roman', serif; }
-html[data-light][data-font='sans'] { --read: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
-html[data-light] .home-name { font-family: 'Oranienbaum', Georgia, serif; font-weight: 400; letter-spacing: 0; }
+/* Classic: the original app's fonts. All regular text (prayer points too)
+   is Open Sans, whatever the setting. Serif gives the headings the old serif
+   look (Georgia, with Oranienbaum for the Home name); Sans makes the headings
+   Open Sans as well. */
+html[data-light] { --ui: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif; --read: var(--ui); }
+html[data-light][data-font='serif'] { --head: Georgia, 'Times New Roman', serif; --name-weight: 500; --name-ls: 0; }
+html[data-light][data-font='sans'] { --head: var(--ui); --name-weight: 600; --name-ls: -0.01em; }
+html[data-light] .big-title { font-family: var(--head); }
+html[data-light][data-font='serif'] .home-name { font-family: 'Oranienbaum', Georgia, serif; font-weight: 400; letter-spacing: 0; }
