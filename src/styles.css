@@ -489,3 +489,10 @@ html[data-light] .size-slider input { background: rgba(90,70,50,.18); }
 html[data-light] .size-slider input::-webkit-slider-thumb { background: var(--acc); }
 html[data-light] .size-slider input::-moz-range-thumb { background: var(--acc); }
 html[data-light] .home-tile .ic { background: rgba(90,70,50,.08); }
+/* Classic: the original app's fonts. Open Sans throughout; the Serif / Sans
+   setting picks Georgia or Open Sans for names and prayer points; the Home
+   greeting name uses Oranienbaum, as it did originally. */
+html[data-light] { --ui: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+html[data-light][data-font='serif'] { --read: Georgia, 'Times New Roman', serif; }
+html[data-light][data-font='sans'] { --read: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+html[data-light] .home-name { font-family: 'Oranienbaum', Georgia, serif; font-weight: 400; letter-spacing: 0; }

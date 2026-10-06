@@ -67,7 +67,7 @@ export default function Home({ nav }) {
 
       <div style={{ textAlign: 'center' }}>
         {settings.name && <div style={{ fontSize: 19, opacity: 0.92 }}>{greetingFor(nav.now)},</div>}
-        <FitText as="h1" className="title" size={settings.name ? 58 : 46} min={22} style={{ lineHeight: 1.1 }}>{settings.name || greetingFor(nav.now)}</FitText>
+        <FitText as="h1" className="title home-name" size={settings.name ? 58 : 46} min={22} style={{ lineHeight: 1.1 }}>{settings.name || greetingFor(nav.now)}</FitText>
       </div>
 
       {prayable.length === 0 ? (
