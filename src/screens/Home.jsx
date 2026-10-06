@@ -141,7 +141,7 @@ export default function Home({ nav }) {
         </button>
         <button className="home-tile col" onClick={() => nav.go('settings', { focus: 'backup' })}>
           <span className="ic"><Download size={22} /></span>
-          <span>Backup<small style={backupAge == null || backupAge > 30 ? { color: '#FFE3A0', opacity: 1 } : undefined}>{backupText}</small></span>
+          <span>Backup<small style={backupAge == null || backupAge > 30 ? { color: 'var(--attention)', opacity: 1 } : undefined}>{backupText}</small></span>
         </button>
       </div>
     </div>

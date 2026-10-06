@@ -13,6 +13,7 @@
   --line: rgba(255,255,255,.16); --soft: rgba(255,255,255,.14); --panel: var(--glass);
   /* Text boxes are frosted white with dark text everywhere, like the cards. */
   --field: rgba(255,255,255,.7); --field-text: #231B33; --field-ph: #8F8199; --btn: #FFFFFF; --btn-ink: #2A2140; --link: #FFFFFF;
+  --attention: #FFE3A0; --error-soft: #FFC2B8;
   --danger: #FFB4A8; --green: #27C79A; --warn-bg: rgba(255,200,90,.24); --warn-ink: #FFF3D6;
   --high: #FF6A45; --med: #8F7BFF; --low: #27C79A; --occ: #4AA3F0;
   --dot-ring: rgba(255,255,255,.6); --tick: rgba(255,255,255,.78);
@@ -428,3 +429,63 @@ select.input { appearance: none; }
 /* Prayer list points: tap for Answered / Edit / Delete; answered this week */
 .list-point { display: block; width: 100%; text-align: left; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 15px; line-height: 1.4; }
 .list-answered { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; font-size: 14px; color: var(--sub); border-bottom: 1px solid var(--line); }
+
+.head-btn { background: rgba(255,255,255,.18); }
+
+/* ---------- Classic: the original app's warm, light look ----------
+   The one light sky, so text turns dark brown, buttons turn copper, and
+   glass and cards get the old fine warm border. Fonts still follow the
+   Serif / Sans setting. */
+html[data-light] {
+  --text: #3D352C; --sub: #6B5D4F; --muted: #8C7B6A;
+  --line: rgba(90,70,50,.14); --soft: rgba(90,70,50,.07); --panel: rgba(255,255,255,.55);
+  --link: #B87A4A; --danger: #C4635E; --tick: #8C7B6A; --dot-ring: rgba(90,70,50,.25);
+  --warn-bg: rgba(255,214,140,.45); --warn-ink: #6B4A12;
+  --attention: #B8742A; --error-soft: #C4635E;
+  --classic-line: #D4C8B8; --copper: linear-gradient(135deg, #D49A5A 0%, #A66830 100%);
+}
+html[data-light] .cream, html[data-light] .sheet, html[data-light] .dialog {
+  --text: #3D352C; --sub: #6B5D4F; --muted: #8C7B6A; --line: rgba(90,70,50,.12); --field-text: #3D352C; --field-ph: #8C7B6A;
+}
+html[data-light] .surface.cream, html[data-light] .list.cream, html[data-light] .pray-body {
+  background: linear-gradient(145deg, #FFFFFF 0%, #F5F0E8 100%); box-shadow: 0 4px 14px rgba(90,70,50,.08);
+}
+html[data-light] .surface.cream, html[data-light] .list.cream { border: 1px solid var(--classic-line); }
+html[data-light] .pray-card { border: 1px solid var(--classic-line); box-shadow: 0 4px 14px rgba(90,70,50,.1); }
+html[data-light] .pray-head { background: linear-gradient(135deg, #EDE4D6 0%, #D9CDBF 100%); color: #3D352C; border-bottom: 1px solid var(--classic-line); }
+html[data-light] .head-btn { background: rgba(255,255,255,.6); border: 1px solid var(--classic-line); }
+
+/* Frosted controls: light, with the fine border */
+html[data-light] .glass, html[data-light] .icon-btn.glass, html[data-light] .surface:not(.cream), html[data-light] .seg,
+html[data-light] .chip, html[data-light] .pill, html[data-light] .home-tile, html[data-light] .next-btn,
+html[data-light] .sort-btn, html[data-light] .pinned, html[data-light] .btn.secondary, html[data-light] .bubble,
+html[data-light] .input { border: 1px solid var(--classic-line); }
+html[data-light] .home-tile { color: var(--text); }
+html[data-light] .home-tile small { opacity: 1; color: var(--sub); }
+
+/* The white buttons become the original copper */
+html[data-light] .home-go, html[data-light] .pray-main, html[data-light] .btn.white, html[data-light] .continue,
+html[data-light] .seg button[aria-pressed='true'], html[data-light] .chip[aria-pressed='true'] {
+  background: var(--copper); color: #fff; box-shadow: 0 6px 20px rgba(184,122,74,.3);
+}
+html[data-light] .home-go .small { color: rgba(255,255,255,.88) !important; }
+html[data-light] .home-go .go { background: rgba(255,255,255,.25) !important; }
+html[data-light] .pray-main .check, html[data-light] .continue .arrow { color: #fff; }
+html[data-light] .pray-main.done { background: #8E5A33; }
+html[data-light] .tick.on { background: var(--acc); border-color: var(--acc); color: #fff; }
+html[data-light] .step-dots i { background: rgba(90,70,50,.2); }
+html[data-light] .step-dots i.on { background: var(--acc); }
+
+/* Home ring on cream */
+html[data-light] .home-ring svg circle:first-of-type { fill: rgba(255,255,255,.4); stroke: rgba(184,122,74,.16); }
+/* Classic: Settings pickers */
+html[data-light] .opt-card { color: var(--text); border: 1px solid var(--classic-line); }
+html[data-light] .opt-card[aria-pressed='true'] { background: linear-gradient(145deg, #FFFFFF 0%, #F5F0E8 100%); color: var(--text); border-color: var(--acc); }
+html[data-light] .opt-card .ico { background: rgba(90,70,50,.08); }
+html[data-light] .mode-card { background: rgba(255,255,255,.5); border: 1px solid var(--classic-line); }
+html[data-light] .mode-card[aria-pressed='true'] { background: var(--copper); color: #fff; }
+html[data-light] .thumb.selected { outline-color: var(--acc); }
+html[data-light] .size-slider input { background: rgba(90,70,50,.18); }
+html[data-light] .size-slider input::-webkit-slider-thumb { background: var(--acc); }
+html[data-light] .size-slider input::-moz-range-thumb { background: var(--acc); }
+html[data-light] .home-tile .ic { background: rgba(90,70,50,.08); }

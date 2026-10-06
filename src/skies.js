@@ -56,6 +56,13 @@ export const SKIES = {
     name: 'Golden hour', top: '#F5C35A', ring: '#FFFFFF', go: '#D65A3C',
     bg: 'linear-gradient(180deg,#F5C35A 0%,#EC8B3B 32%,#C54C33 66%,#4B1832 100%)',
   },
+  // The original app's warm parchment look. The only light sky: dark text,
+  // copper buttons, white-to-cream cards. A toffee band behind the clock
+  // keeps the iPhone's white clock and battery icons readable.
+  classic: {
+    name: 'Classic', light: true, top: '#8C6A4E', ring: '#B87A4A', go: '#B87A4A', glass: 'rgba(255,255,255,.55)', extra: '#3E8E6A',
+    bg: 'linear-gradient(180deg,#8C6A4E 0px,#8C6A4E env(safe-area-inset-top),#C9A98A calc(env(safe-area-inset-top) + 26px),#F5EEE4 calc(env(safe-area-inset-top) + 96px),#E8DECE 60%,#EDE4D8 100%)',
+  },
   aurora: {
     name: 'Aurora', stars: true, top: '#0E1B2A', ring: '#7FF0C8', go: '#2FA88A', glass: 'rgba(255,255,255,.08)',
     bg: `${AURORA_GLOW}, linear-gradient(180deg,#0E1B2A 0%,#0F1726 60%,#0A0F1C 100%)`,
@@ -63,7 +70,7 @@ export const SKIES = {
 };
 
 export const DAY_SKIES = ['morning', 'midday', 'afternoon', 'sunset', 'dusk', 'night'];
-export const COLOUR_SKIES = ['twilight', 'ocean', 'rose', 'forest', 'golden', 'aurora'];
+export const COLOUR_SKIES = ['twilight', 'ocean', 'rose', 'forest', 'golden', 'aurora', 'classic'];
 export const DEFAULT_GLASS = 'rgba(40,24,50,.28)';
 
 export const skyForTime = (d = new Date()) => {

@@ -112,6 +112,8 @@ function useSky(settings, now, quiet) {
     html.style.backgroundSize = '100% var(--screen-h)';
     html.style.backgroundRepeat = 'no-repeat';
     html.dataset.font = settings.font;
+    // Classic is a light sky: dark text and copper buttons (see styles.css).
+    if (settings.onboarded && sky.light) html.dataset.light = '1'; else delete html.dataset.light;
     html.dataset.size = settings.size;
     html.style.setProperty('--z', { s: 0.9, m: 0.95, l: 1, xl: 1.1 }[settings.size] || 1);
     html.style.setProperty('--acc', sky.go);

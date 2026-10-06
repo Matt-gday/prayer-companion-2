@@ -206,7 +206,7 @@ export default function AddFlow({ nav, from }) {
             <Switch checked={everyDay} label="Every day" onChange={setEveryDay} />
           </div>
         )}
-        {error && <div className="small" style={{ color: '#FFC2B8' }}>{error}</div>}
+        {error && <div className="small" style={{ color: 'var(--error-soft)' }}>{error}</div>}
         <div style={{ flex: 1 }} />
         {cont('Continue', goPoints)}
       </div>

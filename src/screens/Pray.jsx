@@ -227,8 +227,8 @@ function PrayerCard({ card, onEdit, onManage }) {
         <div className="spread">
           <PriorityPill priority={card.priority} everyDay={card.priority === 'high' && card.everyDay} />
           <span className="row" style={{ gap: 6, margin: '-4px -4px -4px 0' }}>
-            {onManage && <button className="icon-btn" style={{ background: 'rgba(255,255,255,.18)', width: 40, height: 40 }} onClick={onManage} aria-label="Prayer points"><ListCheck /></button>}
-            <button className="icon-btn" style={{ background: 'rgba(255,255,255,.18)', width: 40, height: 40 }} onClick={onEdit} aria-label="Edit details"><Pencil /></button>
+            {onManage && <button className="icon-btn head-btn" style={{ width: 40, height: 40 }} onClick={onManage} aria-label="Prayer points"><ListCheck /></button>}
+            <button className="icon-btn head-btn" style={{ width: 40, height: 40 }} onClick={onEdit} aria-label="Edit details"><Pencil /></button>
           </span>
         </div>
         <h2 className={`pray-name ${cardKind(card, people) === 'org' ? 'italic' : ''}`}>{cardName(card, people)}</h2>

@@ -67,7 +67,7 @@ export function NewList({ nav }) {
       <label className="field">People (one per line, you can add more later)
         <textarea className="input" rows={6} placeholder={'Josh\nNathan\nChris & Amy'} value={names} onChange={(e) => setNames(e.target.value)} />
       </label>
-      {error && <div className="small" style={{ color: '#FFC2B8' }}>{error}</div>}
+      {error && <div className="small" style={{ color: 'var(--error-soft)' }}>{error}</div>}
       <div style={{ flex: 1 }} />
       <button className="continue" onClick={create}>Create list<span className="arrow"><Next size={20} /></span></button>
     </div>
@@ -174,7 +174,7 @@ export function ListPage({ nav, listId }) {
       </div>
 
       {editing ? (
-        <button className="btn secondary" style={{ color: '#FFC2B8' }} onClick={() => ask({
+        <button className="btn secondary" style={{ color: 'var(--error-soft)' }} onClick={() => ask({
           title: `Delete ${list.name}?`, message: 'This deletes the list, its people, requests and past weeks.', confirmLabel: 'Delete', danger: true,
           onConfirm: () => { deleteList(list.id); nav.go('lists'); },
         })}>Delete this list</button>

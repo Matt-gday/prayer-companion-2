@@ -109,7 +109,7 @@ export default function Settings({ nav, focus }) {
       <div ref={backupRef} id="backup" className={`surface stack ${glow ? 'highlight' : ''}`} style={{ gap: 10 }} onAnimationEnd={() => setGlow(false)}>
         <div className="spread">
           <span style={{ fontWeight: 600 }}>Backup</span>
-          <span className="tiny" style={{ color: backupAge == null || backupAge > 30 ? '#FFE3A0' : 'var(--sub)' }}>
+          <span className="tiny" style={{ color: backupAge == null || backupAge > 30 ? 'var(--attention)' : 'var(--sub)' }}>
             {backupAge == null ? 'Not saved yet' : backupAge === 0 ? 'Saved today' : `Saved ${backupAge} day${backupAge === 1 ? '' : 's'} ago`}
           </span>
         </div>
