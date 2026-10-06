@@ -498,3 +498,9 @@ html[data-light][data-font='serif'] { --head: Georgia, 'Times New Roman', serif;
 html[data-light][data-font='sans'] { --head: var(--ui); --name-weight: 600; --name-ls: -0.01em; }
 html[data-light] .big-title { font-family: var(--head); }
 html[data-light][data-font='serif'] .home-name { font-family: 'Oranienbaum', Georgia, serif; font-weight: 400; letter-spacing: 0; }
+/* Classic text, like the original's everyday text: a warmer brown at regular
+   weight for the date, pills and filters (buttons and headings keep their weight). */
+html[data-light] { --text: #4A3F34; }
+html[data-light] .cream, html[data-light] .sheet, html[data-light] .dialog { --text: #4A3F34; --field-text: #4A3F34; }
+html[data-light] .home-date, html[data-light] .pill, html[data-light] .chip, html[data-light] .seg button:not([aria-pressed='true']) { font-weight: 400; }
+html[data-light] .home-date { font-weight: 400 !important; }

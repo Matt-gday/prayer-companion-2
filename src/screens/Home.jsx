@@ -61,7 +61,7 @@ export default function Home({ nav }) {
   return (
     <div className="screen home" style={{ gap: 16 }}>
       <div className="spread" style={{ marginTop: 4 }}>
-        <span style={{ fontSize: 17, fontWeight: 500, opacity: 0.95 }}>{formatLongDate(date)}{settings.demo ? ' · Demo' : ''}</span>
+        <span className="home-date" style={{ fontSize: 17, fontWeight: 500, opacity: 0.95 }}>{formatLongDate(date)}{settings.demo ? ' · Demo' : ''}</span>
         <button className="icon-btn glass" onClick={() => nav.go('settings')} aria-label="Settings"><Cog /></button>
       </div>
 
