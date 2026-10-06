@@ -179,10 +179,15 @@ export function StoreProvider({ children }) {
     })));
   }, [showToast]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const answerPoint = useCallback((target, point) => {
-    setPointStatus(target, point.id, 'answered');
-    showToast('Marked as answered', () => setPointStatus(target, point.id, 'active'));
-  }, [setPointStatus, showToast]);
+  // Optionally with a note about how it was answered.
+  const answerPoint = useCallback((target, point, note = '') => {
+    setData((d) => editPoints(d, target, (pts) => pts.map((pt) => (pt.id === point.id
+      ? { ...pt, status: 'answered', closed: today(), note: note || undefined } : pt))));
+    showToast('Marked as answered', () => setData((d) => editPoints(d, target, (pts) => pts.map((pt) => (pt.id === point.id
+      ? { ...pt, status: 'active', closed: null, note: undefined } : pt)))));
+  }, [showToast]); // eslint-disable-line react-hooks/exhaustive-deps
+  const setPointNote = useCallback((target, pointId, note) =>
+    setData((d) => editPoints(d, target, (pts) => pts.map((pt) => (pt.id === pointId ? { ...pt, note: note || undefined } : pt)))), []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const makePerson = (fields) => ({
     id: newId(),
@@ -504,7 +509,7 @@ export function StoreProvider({ children }) {
     addList, renameList, deleteList, addListPerson, renameListPerson, removeListPerson, moveListPerson,
     addRequest, editRequest, removeRequest, toggleListTick, finishListPrayer, newWeek,
     setSetting, setDemo, setLimit, showToast, dismissToast: () => setToast(null),
-    updatePerson, updateCard, addPoint, setPointText, setPointStatus, movePoint, removePoint, answerPoint,
+    updatePerson, updateCard, addPoint, setPointText, setPointStatus, setPointNote, movePoint, removePoint, answerPoint,
     addSolo, addGroup, addToGroup, makeGroupFrom, removeFromGroup, splitGroup, setArchived, deleteCard, deletePerson,
     startToday, setIndex, setView, toggleTick, setCardPrayed, keepPraying, addExtraCard,
     prayedToday: activeSession ? prayedCount(activeSession, cards, people) : 0,
@@ -512,7 +517,7 @@ export function StoreProvider({ children }) {
   }), [people, cards, lists, settings, activeSession,
     addList, renameList, deleteList, addListPerson, renameListPerson, removeListPerson, moveListPerson,
     addRequest, editRequest, removeRequest, toggleListTick, finishListPrayer, newWeek, toast, date, setSetting, setDemo, setLimit, showToast,
-    updatePerson, updateCard, addPoint, setPointText, setPointStatus, movePoint, removePoint, answerPoint,
+    updatePerson, updateCard, addPoint, setPointText, setPointStatus, setPointNote, movePoint, removePoint, answerPoint,
     addSolo, addGroup, addToGroup, makeGroupFrom, removeFromGroup, splitGroup, setArchived, deleteCard, deletePerson,
     startToday, setIndex, setView, toggleTick, setCardPrayed, keepPraying, addExtraCard, exportBackup, readBackup, restoreBackup]);
 

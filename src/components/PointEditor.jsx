@@ -3,6 +3,7 @@ import { useStore } from '../store.jsx';
 import { activePoints, pointPrayedDates, deletePointMessage } from '../model.js';
 import { AutoText, useConfirm } from './ui.jsx';
 import { Grip, Check, Trash, Plus } from './Icons.jsx';
+import AnsweredNote from './AnsweredNote.jsx';
 
 // Edit a list of prayer points: change the words, drag to reorder,
 // mark answered, delete (kept in history), or add new ones.
@@ -19,6 +20,7 @@ export default function PointEditor({ target, points, placeholder = 'Add a praye
   const active = activePoints(points);
   const [draft, setDraft] = useState('');
   const [drag, setDrag] = useState(null); // { id, from, dy, rowH }
+  const [answering, setAnswering] = useState(null); // point id showing the answered note box
 
   const add = () => {
     if (!draft.trim()) return;
@@ -46,7 +48,8 @@ export default function PointEditor({ target, points, placeholder = 'Add a praye
     <div className="stack" style={{ gap: 0 }}>
       {label && <span className="label" style={{ marginBottom: 4 }}>{label}</span>}
       {active.map((pt, i) => (
-        <div key={pt.id} className={`pt-row ${drag?.id === pt.id ? 'dragging' : ''}`}
+        <div key={pt.id}>
+        <div className={`pt-row ${drag?.id === pt.id ? 'dragging' : ''}`}
           style={drag?.id === pt.id ? { transform: `translateY(${drag.dy}px)` } : undefined}>
           {active.length > 1 && (
             <span className="grip" aria-label="Drag to reorder" role="button"
@@ -56,12 +59,18 @@ export default function PointEditor({ target, points, placeholder = 'Add a praye
             </span>
           )}
           <PointText point={pt} onSave={(text) => setPointText(target, pt.id, text)} />
-          <button className="chip-btn" onClick={() => answerPoint(target, pt)} aria-label={`Mark "${pt.text}" as answered`}>
+          <button className="chip-btn" onClick={() => setAnswering(answering === pt.id ? null : pt.id)} aria-label={`Mark "${pt.text}" as answered`}>
             <Check size={14} />Answered
           </button>
           <button className="icon-btn" style={{ width: 38, height: 38 }} onClick={() => confirmDelete(pt)} aria-label={`Delete "${pt.text}"`}>
             <Trash />
           </button>
+        </div>
+        {answering === pt.id && (
+          <div style={{ padding: '8px 0 10px' }}>
+            <AnsweredNote onCancel={() => setAnswering(null)} onDone={(note) => { setAnswering(null); answerPoint(target, pt, note); }} />
+          </div>
+        )}
         </div>
       ))}
       <div className="row" style={{ marginTop: 8, gap: 8 }}>

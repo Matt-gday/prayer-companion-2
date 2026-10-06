@@ -95,6 +95,7 @@ export default function CardPage({ nav, cardId, from }) {
               <span className="solid-low" style={{ width: 22, height: 22, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}><Check size={13} /></span>
               <span className="stack" style={{ gap: 2 }}>
                 <span className="read" style={{ fontSize: 17, lineHeight: 1.35 }}>{who(pt)}{pt.text}</span>
+                {pt.note && <span className="answered-note">{pt.note}</span>}
                 <span className="tiny sub">Prayed for {duration(pt.added, pt.closed)} · answered {formatShortDate(pt.closed)}</span>
               </span>
             </div>

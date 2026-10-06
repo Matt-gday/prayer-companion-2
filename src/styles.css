@@ -417,3 +417,10 @@ select.input { appearance: none; }
 /* The big name box on the welcome screen keeps its own see-through look. */
 .input.feature::placeholder { color: rgba(255,255,255,.55); }
 .input input::placeholder { color: var(--field-ph); }
+
+/* Answered: the optional note box that opens in place, and the saved note */
+.answer-note { display: flex; flex-direction: column; gap: 8px; }
+.answer-note-label { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; color: var(--acc); }
+.answer-note textarea.input { min-height: 58px; font-size: 15px; padding: 10px 12px; }
+.qa.qa-fill { background: var(--acc); color: #fff; }
+.answered-note { font-family: var(--read); font-style: italic; font-size: 15px; line-height: 1.4; color: var(--sub); }

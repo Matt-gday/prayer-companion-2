@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useStore } from '../store.jsx';
+import { EditAnsweredNote } from '../components/AnsweredNote.jsx';
 import { cardMembers, cardName, cardKind, personName, formatShortDate, formatMonthYear, everPrayed } from '../model.js';
 import { TopBar, PageHeading } from '../components/ui.jsx';
 import PointEditor from '../components/PointEditor.jsx';
@@ -8,7 +10,8 @@ import { backFrom } from './Details.jsx';
 // Every prayer point for a card in one scrolling page: edit, reorder, mark
 // answered or delete; then every answered and past point, with "Pray again".
 export default function PrayerPoints({ nav, cardId, from, cardFrom }) {
-  const { people, cards, addPoint, setPointStatus, showToast } = useStore();
+  const { people, cards, addPoint, setPointStatus, setPointNote, showToast } = useStore();
+  const [noting, setNoting] = useState(null); // answered point whose note is being edited
   const card = cards.find((c) => c.id === cardId);
   const back = backFrom(nav, { cardId, from, cardFrom });
 
@@ -71,7 +74,18 @@ export default function PrayerPoints({ nav, cardId, from, cardFrom }) {
               <span className="solid-low" style={{ width: 22, height: 22, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}><Check size={13} /></span>
               <span className="grow stack" style={{ gap: 2 }}>
                 <span className="read" style={{ fontSize: 16, lineHeight: 1.35 }}>{label(pt)}{pt.text}</span>
-                <span className="tiny sub">Answered {formatShortDate(pt.closed)}</span>
+                {noting === pt.id ? (
+                  <EditAnsweredNote initial={pt.note || ''} onCancel={() => setNoting(null)}
+                    onSave={(note) => { setPointNote(pt.section.target, pt.id, note); setNoting(null); }} />
+                ) : (
+                  <>
+                    {pt.note && <span className="answered-note">{pt.note}</span>}
+                    <span className="tiny sub">
+                      Answered {formatShortDate(pt.closed)} ·{' '}
+                      <button className="link" style={{ fontSize: 'inherit', minHeight: 0, padding: 0 }} onClick={() => setNoting(pt.id)}>{pt.note ? 'edit note' : 'add a note'}</button>
+                    </span>
+                  </>
+                )}
               </span>
               {again(() => againAnswered(pt))}
             </div>

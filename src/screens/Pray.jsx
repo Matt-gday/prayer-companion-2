@@ -7,6 +7,7 @@ import {
 import { isCardDone } from '../scheduler.js';
 import { Tick, PriorityPill, useConfirm } from '../components/ui.jsx';
 import AddPointInline from '../components/AddPointInline.jsx';
+import AnsweredNote from '../components/AnsweredNote.jsx';
 import { Back, Next, Prev, List, Cards, Pencil, Check, Clock, ListCheck, Trash } from '../components/Icons.jsx';
 
 function ViewToggle({ view, onChange }) {
@@ -180,6 +181,7 @@ function PrayerCard({ card, onEdit, onManage }) {
   const [ask, confirmNode] = useConfirm();
   const [openPoint, setOpenPoint] = useState(null); // point showing its quick actions
   const [editText, setEditText] = useState(null); // words being edited, or null
+  const [answering, setAnswering] = useState(false); // showing the answered note box
   const openRef = useRef(null);
   const members = cardMembers(card, people);
   const keys = tickKeys(card, people);
@@ -196,12 +198,12 @@ function PrayerCard({ card, onEdit, onManage }) {
   // Tapping anywhere outside the open point closes its actions.
   useEffect(() => {
     if (!openPoint) return undefined;
-    const close = (e) => { if (!openRef.current?.contains(e.target)) { setOpenPoint(null); setEditText(null); } };
+    const close = (e) => { if (!openRef.current?.contains(e.target)) { setOpenPoint(null); setEditText(null); setAnswering(false); } };
     document.addEventListener('pointerdown', close);
     return () => document.removeEventListener('pointerdown', close);
   }, [openPoint]);
 
-  const toggle = (id) => { setEditText(null); setOpenPoint(openPoint === id ? null : id); };
+  const toggle = (id) => { setEditText(null); setAnswering(false); setOpenPoint(openPoint === id ? null : id); };
   const confirmDelete = (pt) => {
     setOpenPoint(null);
     ask({
@@ -273,6 +275,10 @@ function PrayerCard({ card, onEdit, onManage }) {
                     <span className="point-text">{pt.text}</span>
                   </button>
                 )}
+                {answering ? (
+                  <AnsweredNote onCancel={() => setAnswering(false)}
+                    onDone={(note) => { setAnswering(false); setOpenPoint(null); answerPoint(pointTarget, pt, note); }} />
+                ) : (
                 <div className="quick-actions">
                   {editText != null ? (
                     <>
@@ -281,12 +287,13 @@ function PrayerCard({ card, onEdit, onManage }) {
                     </>
                   ) : (
                     <>
-                      <button className="qa qa-go" onClick={() => { setOpenPoint(null); answerPoint(pointTarget, pt); }}><Check size={14} />Answered</button>
+                      <button className="qa qa-go" onClick={() => setAnswering(true)}><Check size={14} />Answered</button>
                       <button className="qa" onClick={() => setEditText(pt.text)}><Pencil size={14} />Edit</button>
                       <button className="qa danger" onClick={() => confirmDelete(pt)}><Trash size={14} />Delete</button>
                     </>
                   )}
                 </div>
+                )}
               </div>
             ) : (
               <button key={pt.id} className="point" style={{ textAlign: 'left', width: '100%' }} onClick={() => toggle(pt.id)} aria-expanded="false">
