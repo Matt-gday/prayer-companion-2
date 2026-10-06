@@ -1,7 +1,8 @@
-import { useState } from 'react';
 import { useStore } from '../store.jsx';
 import { formatShortDate, today } from '../model.js';
-import { TopBar, Sheet, Tick, useConfirm, AutoText } from '../components/ui.jsx';
+import { useEffect, useRef, useState } from 'react';
+import { TopBar, Sheet, Tick, useConfirm } from '../components/ui.jsx';
+import AnsweredNote from '../components/AnsweredNote.jsx';
 import { Back, Plus, List, Chevron, Grip, Trash, Upload, Check, Pencil, History, Close, Next } from '../components/Icons.jsx';
 
 const weekLabel = (iso) => `Week of ${new Date(`${iso}T12:00:00`).toLocaleDateString('en-AU', { day: 'numeric', month: 'long' })}`;
@@ -193,7 +194,7 @@ export function ListPage({ nav, listId }) {
       )}
 
       {sheet === 'week' && <NewWeekSheet list={list} onClose={() => setSheet(null)} />}
-      {sheet === 'share' && <ShareSheet title="Share this week’s requests" text={shareText(list.name, list.week.start, list.people.map((p) => ({ name: p.name, requests: p.requests.map((x) => x.text) })))} onClose={() => setSheet(null)} />}
+      {sheet === 'share' && <ShareSheet title="Share this week’s requests" text={shareText(list.name, list.week.start, list.people.map((p) => ({ name: p.name, requests: p.requests.map((x) => x.text) })), list.week.answered || [])} onClose={() => setSheet(null)} />}
       {confirmNode}
     </div>
   );
@@ -201,19 +202,67 @@ export function ListPage({ nav, listId }) {
 
 // A person's points, opened in place: edit the words, delete, or add more.
 function PersonPoints({ list, person, onClose }) {
-  const { addRequest, editRequest, removeRequest } = useStore();
+  const { addRequest, editRequest, removeRequest, answerRequest } = useStore();
+  const [ask, confirmNode] = useConfirm();
   const [draft, setDraft] = useState('');
+  const [open, setOpen] = useState(null); // point showing its actions
+  const [editText, setEditText] = useState(null);
+  const [answering, setAnswering] = useState(false);
+  const openRef = useRef(null);
   const add = () => { addRequest(list.id, person.id, draft); setDraft(''); };
+  const close = () => { setOpen(null); setEditText(null); setAnswering(false); };
+  const answered = (list.week.answered || []).filter((a) => a.personId === person.id);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const outside = (e) => { if (!openRef.current?.contains(e.target)) close(); };
+    document.addEventListener('pointerdown', outside);
+    return () => document.removeEventListener('pointerdown', outside);
+  }, [open]);
+
+  const saveEdit = (r) => {
+    const t = (editText || '').trim();
+    if (t && t !== r.text) editRequest(list.id, person.id, r.id, t);
+    close();
+  };
+
   return (
     <div className="grow list-open">
       <button className="spread full" style={{ minHeight: 30 }} onClick={onClose} aria-expanded="true">
         <span style={{ fontWeight: 600, fontSize: 15.5 }}>{person.name}</span>
         <span className="muted"><Chevron size={14} style={{ transform: 'rotate(-90deg)' }} /></span>
       </button>
-      {person.requests.map((r) => (
-        <div key={r.id} className="pt-row">
-          <AutoText value={r.text} onChange={(t) => editRequest(list.id, person.id, r.id, t)} />
-          <button className="icon-btn" style={{ width: 36, height: 36, color: 'var(--muted)' }} aria-label={`Delete "${r.text}"`} onClick={() => removeRequest(list.id, person.id, r.id)}><Trash /></button>
+      {person.requests.map((r) => (open === r.id ? (
+        <div key={r.id} ref={openRef} className="point-open" style={{ margin: '4px -10px' }}>
+          {editText != null ? (
+            <input className="input" autoFocus value={editText} aria-label="Edit prayer point"
+              onChange={(e) => setEditText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') saveEdit(r); if (e.key === 'Escape') setEditText(null); }} />
+          ) : (
+            <button className="list-point" onClick={close} aria-expanded="true">{r.text}</button>
+          )}
+          {answering ? (
+            <AnsweredNote onCancel={() => setAnswering(false)} onDone={(note) => { close(); answerRequest(list.id, person.id, r.id, note); }} />
+          ) : editText != null ? (
+            <div className="quick-actions" style={{ paddingLeft: 0 }}>
+              <button className="qa qa-go" onClick={() => saveEdit(r)}><Check size={14} />Save</button>
+              <button className="qa" onClick={() => setEditText(null)}>Cancel</button>
+            </div>
+          ) : (
+            <div className="quick-actions" style={{ paddingLeft: 0 }}>
+              <button className="qa qa-go" onClick={() => setAnswering(true)}><Check size={14} />Answered</button>
+              <button className="qa" onClick={() => setEditText(r.text)}><Pencil size={14} />Edit</button>
+              <button className="qa danger" onClick={() => { close(); ask({ title: 'Delete this prayer point?', message: 'It will be removed from the list.', confirmLabel: 'Delete', danger: true, onConfirm: () => removeRequest(list.id, person.id, r.id) }); }}><Trash size={14} />Delete</button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <button key={r.id} className="list-point" onClick={() => { setEditText(null); setAnswering(false); setOpen(r.id); }} aria-expanded="false">{r.text}</button>
+      )))}
+      {answered.map((a) => (
+        <div key={a.id} className="list-answered">
+          <span className="row" style={{ gap: 6, alignItems: 'flex-start' }}><Check size={14} style={{ flexShrink: 0, marginTop: 3, color: 'var(--acc)' }} /><span>{a.text}</span></span>
+          {a.note && <span className="answered-note" style={{ fontSize: 13.5, paddingLeft: 20 }}>{a.note}</span>}
         </div>
       ))}
       <div className="row" style={{ gap: 8, marginTop: 8 }}>
@@ -221,6 +270,7 @@ function PersonPoints({ list, person, onClose }) {
           onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') add(); }} />
         <button className="btn accent" style={{ width: 46, height: 46, padding: 0, borderRadius: 12, flexShrink: 0 }} onClick={add} aria-label="Add prayer point"><Plus size={18} /></button>
       </div>
+      {confirmNode}
     </div>
   );
 }
@@ -279,10 +329,11 @@ function NewWeekSheet({ list, onClose }) {
 }
 
 // people: [{ name, requests: [text] }]
-const shareText = (listName, start, people) => [
+const shareText = (listName, start, people, answered = []) => [
   `${listName} · ${weekLabel(start).replace('Week', 'week')}`,
   '',
   ...people.filter((p) => p.requests.length).map((p) => `${p.name}: ${p.requests.join('; ')}`),
+  ...(answered.length ? ['', 'Answered:', ...answered.map((a) => `${a.name}: ${a.text}${a.note ? ` (${a.note})` : ''}`)] : []),
 ].join('\n');
 
 function ShareSheet({ title, text, onClose }) {
@@ -338,11 +389,11 @@ export function ListHistory({ nav, listId }) {
                 <b style={{ fontSize: 16 }}>{weekLabel(w.start)}</b>
                 <span className="tiny sub">{summary} · ended {formatShortDate(w.end)}</span>
               </span>
-              {people.length > 0 && (
+              {(people.length > 0 || (w.answered || []).length > 0) && (
                 <button className="chip-btn" style={{ flexShrink: 0 }} onClick={() => setSharing(w)}><Upload size={14} />Send</button>
               )}
             </div>
-            {people.length === 0 && <span className="small sub">No prayer points that week.</span>}
+            {people.length === 0 && !(w.answered || []).length && <span className="small sub">No prayer points that week.</span>}
             {people.map((p) => (
               <span key={p.name} className="small" style={{ lineHeight: 1.6 }}>
                 <b>{p.name}:</b>{' '}
@@ -354,12 +405,23 @@ export function ListHistory({ nav, listId }) {
                 ))}
               </span>
             ))}
+            {(w.answered || []).length > 0 && (
+              <div className="stack" style={{ gap: 4, marginTop: 2 }}>
+                <span className="label">Answered</span>
+                {w.answered.map((a, i) => (
+                  <span key={i} className="small" style={{ lineHeight: 1.5 }}>
+                    <Check size={12} style={{ verticalAlign: '-1px', marginRight: 4, color: 'var(--acc)' }} /><b>{a.name}:</b> {a.text}
+                    {a.note && <span className="answered-note" style={{ display: 'block', fontSize: 13.5, paddingLeft: 16 }}>{a.note}</span>}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         );
       })}
       {sharing && (
         <ShareSheet title={`Send ${weekLabel(sharing.start).replace('Week', 'week')}`}
-          text={shareText(list.name, sharing.start, sharing.people || [])} onClose={() => setSharing(null)} />
+          text={shareText(list.name, sharing.start, sharing.people || [], sharing.answered || [])} onClose={() => setSharing(null)} />
       )}
     </div>
   );

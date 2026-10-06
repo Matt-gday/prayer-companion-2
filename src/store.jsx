@@ -449,6 +449,37 @@ export function StoreProvider({ children }) {
   const finishListPrayer = useCallback((listId) => editList(listId, (l) => ({
     ...l, week: { ...l.week, prayedAt: today() },
   })), [setData]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Answered: the point comes off the list and is kept in this week's
+  // record (with an optional note), so it shows in Past weeks and when sent.
+  const answerRequest = useCallback((listId, personId, reqId, note = '') => {
+    let saved = null;
+    editList(listId, (l) => {
+      const p = l.people.find((x) => x.id === personId);
+      const index = p ? p.requests.findIndex((r) => r.id === reqId) : -1;
+      if (index < 0) return l;
+      const r = p.requests[index];
+      saved = { r, index };
+      return {
+        ...l,
+        people: l.people.map((x) => (x.id === personId ? { ...x, requests: x.requests.filter((y) => y.id !== reqId) } : x)),
+        week: { ...l.week, answered: [...(l.week.answered || []), { id: r.id, personId, name: p.name, text: r.text, note: note || undefined, date: today() }] },
+      };
+    });
+    showToast('Marked as answered', () => editList(listId, (l) => {
+      if (!saved) return l;
+      return {
+        ...l,
+        people: l.people.map((x) => {
+          if (x.id !== personId || x.requests.some((y) => y.id === reqId)) return x;
+          const requests = [...x.requests];
+          requests.splice(saved.index, 0, saved.r);
+          return { ...x, requests };
+        }),
+        week: { ...l.week, answered: (l.week.answered || []).filter((a) => a.id !== reqId) },
+      };
+    }));
+  }, [setData, showToast]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const newWeek = useCallback((listId, keepRequests) => editList(listId, (l) => ({
     ...l,
     history: [...(l.history || []), {
@@ -457,8 +488,9 @@ export function StoreProvider({ children }) {
       prayedPoints: l.people.reduce((n, p) => n + p.requests.filter((r) => l.week.ticks[r.id]).length, 0),
       // prayed[i] says whether requests[i] was checked that week.
       people: l.people.map((p) => ({ name: p.name, requests: p.requests.map((r) => r.text), prayed: p.requests.map((r) => !!l.week.ticks[r.id]) })),
+      answered: (l.week.answered || []).map(({ name, text, note }) => ({ name, text, note })),
     }],
-    week: { start: today(), ticks: {} },
+    week: { start: today(), ticks: {}, answered: [] },
     people: keepRequests ? l.people : l.people.map((p) => ({ ...p, requests: [] })),
   })), [setData]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -507,7 +539,7 @@ export function StoreProvider({ children }) {
   const value = useMemo(() => ({
     people, cards, lists, settings, session: activeSession, toast, date,
     addList, renameList, deleteList, addListPerson, renameListPerson, removeListPerson, moveListPerson,
-    addRequest, editRequest, removeRequest, toggleListTick, finishListPrayer, newWeek,
+    addRequest, editRequest, removeRequest, answerRequest, toggleListTick, finishListPrayer, newWeek,
     setSetting, setDemo, setLimit, showToast, dismissToast: () => setToast(null),
     updatePerson, updateCard, addPoint, setPointText, setPointStatus, setPointNote, movePoint, removePoint, answerPoint,
     addSolo, addGroup, addToGroup, makeGroupFrom, removeFromGroup, splitGroup, setArchived, deleteCard, deletePerson,
@@ -516,7 +548,7 @@ export function StoreProvider({ children }) {
     exportBackup, readBackup, restoreBackup,
   }), [people, cards, lists, settings, activeSession,
     addList, renameList, deleteList, addListPerson, renameListPerson, removeListPerson, moveListPerson,
-    addRequest, editRequest, removeRequest, toggleListTick, finishListPrayer, newWeek, toast, date, setSetting, setDemo, setLimit, showToast,
+    addRequest, editRequest, removeRequest, answerRequest, toggleListTick, finishListPrayer, newWeek, toast, date, setSetting, setDemo, setLimit, showToast,
     updatePerson, updateCard, addPoint, setPointText, setPointStatus, setPointNote, movePoint, removePoint, answerPoint,
     addSolo, addGroup, addToGroup, makeGroupFrom, removeFromGroup, splitGroup, setArchived, deleteCard, deletePerson,
     startToday, setIndex, setView, toggleTick, setCardPrayed, keepPraying, addExtraCard, exportBackup, readBackup, restoreBackup]);

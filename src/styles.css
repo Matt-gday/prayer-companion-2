@@ -424,3 +424,7 @@ select.input { appearance: none; }
 .answer-note textarea.input { min-height: 58px; font-size: 15px; padding: 10px 12px; }
 .qa.qa-fill { background: var(--acc); color: #fff; }
 .answered-note { font-family: var(--read); font-style: italic; font-size: 15px; line-height: 1.4; color: var(--sub); }
+
+/* Prayer list points: tap for Answered / Edit / Delete; answered this week */
+.list-point { display: block; width: 100%; text-align: left; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 15px; line-height: 1.4; }
+.list-answered { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; font-size: 14px; color: var(--sub); border-bottom: 1px solid var(--line); }
