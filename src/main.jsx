@@ -2,6 +2,14 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { StoreProvider } from './store.jsx';
 import App from './App.jsx';
+// The Classic theme's fonts, built into the app so they always load (even
+// offline), rather than fetched from Google each time.
+import '@fontsource/open-sans/latin-400.css';
+import '@fontsource/open-sans/latin-400-italic.css';
+import '@fontsource/open-sans/latin-500.css';
+import '@fontsource/open-sans/latin-600.css';
+import '@fontsource/open-sans/latin-700.css';
+import '@fontsource/oranienbaum/latin-400.css';
 import './styles.css';
 
 createRoot(document.getElementById('root')).render(
