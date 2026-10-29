@@ -34,6 +34,24 @@ if (import.meta.env.PROD) {
   });
 }
 
+// Keep the screen on while the app is open, so it doesn't go dark mid-prayer.
+// The phone lets go of this whenever the app is hidden, so ask again each
+// time it comes back, and on the first tap in case it needs one.
+if ('wakeLock' in navigator) {
+  let lock = null;
+  const keepAwake = async () => {
+    if (document.visibilityState !== 'visible' || (lock && !lock.released)) return;
+    try {
+      lock = await navigator.wakeLock.request('screen');
+    } catch {
+      // Not allowed right now (for example Low Power Mode); try again later.
+    }
+  };
+  keepAwake();
+  document.addEventListener('visibilitychange', keepAwake);
+  document.addEventListener('pointerdown', keepAwake, { passive: true });
+}
+
 // Offline support. Only in the built app, so local development stays fresh.
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
