@@ -103,7 +103,12 @@ export default function Pray({ nav }) {
   goRef.current = go;
 
   // Swiping: the card follows your finger, then slides away (or springs back).
-  const onTouchStart = (e) => { touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, horizontal: null }; };
+  // No swiping while typing: dragging the cursor in a text box shouldn't move the card.
+  const typingIn = (el) => el && el.closest && el.closest('input, textarea, [contenteditable="true"]');
+  const onTouchStart = (e) => {
+    if (typingIn(e.target) || typingIn(document.activeElement)) { touch.current = null; return; }
+    touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, horizontal: null };
+  };
   const onTouchMove = (e) => {
     const t = touch.current;
     if (!t) return;
